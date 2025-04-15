@@ -1,0 +1,123 @@
+-- Active: 1736716074336@@127.0.0.1@5432@line_prod_db
+
+CREATE TABLE users (
+    id VARCHAR PRIMARY KEY,
+    username VARCHAR NOT NULL UNIQUE,
+    usercard VARCHAR NOT NULL UNIQUE,
+    password VARCHAR NOT NULL,
+    role VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE reference (
+    id VARCHAR PRIMARY KEY,
+    ref VARCHAR NOT NULL,
+	project VARCHAR NOT NULL,
+	famille VARCHAR NOT NULL,
+    car_type VARCHAR DEFAULT NULL,
+    fuse_box VARCHAR DEFAULT NULL,
+    box_type VARCHAR DEFAULT NULL,
+    cycle_time FLOAT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE projects (
+    id VARCHAR PRIMARY KEY,
+	project VARCHAR NOT NULL,
+	famille VARCHAR NOT NULL,
+    car_type VARCHAR DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE lines (
+    id VARCHAR PRIMARY KEY,
+	project VARCHAR NOT NULL,
+	famille VARCHAR NOT NULL,
+    line_id VARCHAR NOT NULL UNIQUE,
+    car_type VARCHAR DEFAULT NULL,
+    superviseur VARCHAR DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE process (
+    id VARCHAR PRIMARY KEY,
+	process VARCHAR NOT NULL,
+    process_order INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE production_jobs (
+    id VARCHAR PRIMARY KEY,
+    reference VARCHAR NOT NULL,
+    line_id VARCHAR NOT NULL,
+    superviseur VARCHAR DEFAULT NULL,
+    quantity INT NOT NULL,
+    picked INT DEFAULT 0,
+    remain INT DEFAULT 0,
+    job_status VARCHAR NOT NULL,
+    job_order INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE harness_details (
+    id VARCHAR PRIMARY KEY,
+    reference VARCHAR NOT NULL,
+    compteur VARCHAR NOT NULL,
+    line_id VARCHAR NOT NULL,
+    process VARCHAR NOT NULL,
+    test_result VARCHAR NOT NULL,
+    process_time FLOAT DEFAULT 0.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE harness_tracker (
+    id VARCHAR PRIMARY KEY,
+    reference VARCHAR NOT NULL,
+    compteur VARCHAR NOT NULL UNIQUE,
+    line_id VARCHAR NOT NULL,
+    process VARCHAR NOT NULL,
+    harness_status VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE galia (
+    id VARCHAR PRIMARY KEY,
+    nr_galia VARCHAR NOT NULL,
+    reference VARCHAR NOT NULL,
+    line_id VARCHAR NOT NULL,
+    total_q INT DEFAULT 0,
+    remain_q INT DEFAULT 0,
+    scanned_q INT DEFAULT 0,
+    status VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE scanned_fx (
+    id VARCHAR PRIMARY KEY,
+    reference VARCHAR NOT NULL,
+    counter VARCHAR NOT NULL,
+    id_galia VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_galia) REFERENCES galia (id) ON DELETE CASCADE
+);
+
+CREATE TABLE logs (
+    id VARCHAR PRIMARY KEY,
+    nr_galia VARCHAR NULL,
+    reference VARCHAR NULL,
+    barcode VARCHAR NULL,
+    step VARCHAR NULL,
+    error VARCHAR NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+);

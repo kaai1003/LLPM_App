@@ -1,0 +1,53 @@
+{"BOX": [
+    {
+        "barcode": "reference",
+        "prefix": "P",
+        "photo": "photo link"
+    },
+    {
+        "barcode": "nrgalia",
+        "prefix": "S",
+        "photo": "photo link"
+    },
+    {
+        "barcode": "quantity",
+        "prefix": "Q",
+        "photo": "photo link"
+    },
+    {
+        "barcode": "box_type",
+        "prefix": "V",
+        "photo": "photo link"
+    }
+],
+"FX": {"PTA": [
+        {"barcode": "reference",
+        "prefix": "R",
+        "photo": "photo link"},
+        {"barcode": "compteur",
+        "prefix": "P",
+        "length": 5,
+        "photo": "photo link"}
+    ],
+    "BOL": [
+        {"barcode": "reference",
+        "prefix": "",
+        "photo": "photo link"},
+        {"barcode": "compteur",
+        "prefix": "A",
+        "length": 5,
+        "photo": "photo link"},
+        {"barcode": "box_type",
+        "prefix": "B",
+        "photo": "photo link"}
+    ],
+    "BOL2": [
+        {"barcode": "reference",
+        "prefix": "PA",
+        "photo": "photo link"},
+        {"barcode": "compteur",
+        "prefix": "PA",
+        "length": 5,
+        "photo": "photo link"}
+    ]}
+}

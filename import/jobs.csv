@@ -1,0 +1,4 @@
+reference,line_id,superviseur,quantity,picked,remain,job_status,job_order
+12345 01,PJ01,imane,10,0,10,open,1
+12345 02,PJ01,imane,30,0,30,open,2
+12345 03,PJ01,imane,5,0,30,open,3

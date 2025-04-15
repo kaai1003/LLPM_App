@@ -1,0 +1,45 @@
+<config>
+	<labels>
+		<galia order=1>
+			<reference>
+				<order>1</order>
+				<phot>"photo link"</photo>
+				<prefix>reference_prefix</prefix>
+			</reference>
+			<nrgalia>
+				<order>2</order>
+				<phot>"photo link"</photo>
+				<prefix>nrgalia_prefix</prefix>
+			</nrgalia>
+			<quantite>
+				<order>3</order>
+				<phot>"photo link"</photo>
+				<prefix>quantite_prefix</prefix>
+			</quantite>
+		</galia>
+		<pta order=2>
+			<reference>
+				<order>1</order>
+				<phot>"photo link"</photo>
+				<prefix>reference_prefix</prefix>
+			</reference>
+			<compteur>
+				<order>2</order>
+				<phot>"photo link"</photo>
+				<prefix>compteur_prefix</prefix>
+			</compteur>
+		</pta>
+		<bol order=3>
+			<reference>
+				<order>1</order>
+				<phot>"photo link"</photo>
+				<prefix>reference_prefix</prefix>
+			</reference>
+			<compteur>
+				<order>2</order>
+				<phot>"photo link"</photo>
+				<prefix>compteur_prefix</prefix>
+			</compteur>
+		</bol>
+	</labels>
+</config>
