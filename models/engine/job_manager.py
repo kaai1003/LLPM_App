@@ -6,6 +6,7 @@ from models.engine.db_manager import get_all
 from models.engine.db_manager import get_obj
 from models.engine.db_manager import set_db_conn
 from models.engine.app_tools import get_line_conn
+from models.engine.app_tools import load_lines
 from models.job import Job
 
 def check_job(ref, line_id):
@@ -70,10 +71,31 @@ def get_job(ref, line_id):
 
 def get_all_jobs():
     """Get all jobs."""
-    jobs = get_all("production_jobs")
-    if jobs is None:
-        print("No jobs found.")
-        return None
+    jobs = []
+    line_ids = load_lines()
+    if line_ids:
+        for line in line_ids:
+            db_conn = get_line_conn(line)
+            conn = get_connection(db_conn)
+            if conn is None:
+                continue
+            set_db_conn(db_conn)
+            line_jobs = jobs_by_line(line)
+            if line_jobs is None:
+                continue
+            for job in line_jobs:
+                jobs.append((
+                job["id"],
+                job["reference"],
+                job["line_id"],
+                job["quantity"],
+                job["picked"],
+                job["remain"],
+                job["job_status"],
+                job["job_order"],
+                job["created_at"],
+                job["updated_at"]
+            ))
     return jobs
 
 def get_job_by_id(job_id):

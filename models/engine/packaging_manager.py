@@ -3,6 +3,7 @@
 
 import json
 from models.engine.db_manager import get_all
+from models.engine.db_manager import get_list_obj
 
 PACK_CONFIG = "settings/packaging_config.json"
 
@@ -77,3 +78,37 @@ def check_box_ref(box_ref):
         if box["reference"] == box_ref and box["status"] == "open":
             return box
     return None
+
+def check_cpt_hns(hns_cpt):
+    """check Compteur FX"""
+    all_cpt = get_all("scanned_fx")
+    if all_cpt:
+        for cpt in all_cpt:
+            if cpt["counter"] == hns_cpt:
+                return False
+    return True
+
+def list_hns_labels(labels_dict):
+    """List Harness Labels"""
+    list_labels = []
+    for key, value in labels_dict.items():
+        list_labels.append(key)
+    return list_labels
+
+def show_open_galias(line_id):
+    """Show Open Galia by line ID"""
+    current_boxes = []
+    open_boxes = get_list_obj("galia", "line_id", line_id)
+    if open_boxes is None:
+        print("------No Open Galia Found-------")
+        return None
+    else:
+        print("======Open Galia Found======")
+        print("Galia ID | Reference | Line ID | Quantity | Scanned | Status")
+        print("---------|-----------|---------|----------|---------|-------")
+        for box in open_boxes:
+            if box["status"] == "open":
+                print(f"{box['id']} | {box['reference']} | {box['line_id']} | {box['total_q']} | {box['scanned_q']} | {box['status']}")
+                current_boxes.append(box)
+        print("================================")
+    return current_boxes
