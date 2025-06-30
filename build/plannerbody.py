@@ -7,9 +7,11 @@ from PIL import Image, ImageTk
 from functools import partial
 from datetime import datetime
 from models.engine.job_manager import get_all_jobs
+from models.engine.job_manager import update_job
+from models.engine.job_manager import delete_job
 from models.engine.app_tools import load_lines
 from models.engine.job_manager import create_job
-from models.engine.job_manager import jobs_by_line
+from models.engine.job_manager import get_job_by_id
 from models.engine.db_manager import get_connection
 from models.engine.db_manager import set_db_conn
 from models.engine.app_tools import get_line_conn
@@ -48,10 +50,104 @@ class PlannerBody(tk.Frame):
             for job in self.jobs:
                 self.tree.insert("", "end", values=job)
             print("submit Job")
-        
+
+        def edit(job_id, line_id, qt, picked, status, order):
+            current_job = get_job_by_id(job_id, line_id)
+            if current_job is None:
+                tk.Label(self.popup, text="Error: Job not found.", fg="red").grid(row=7, columnspan=2, pady=10)
+                return
+            print(current_job)
+            try:
+                if current_job["quantity"] != int(qt):
+                    if int(qt) < int(current_job["picked"]):
+                        tk.Label(self.popup, text="Error: Quantity cannot be less than picked quantity.", fg="red").grid(row=7, columnspan=2, pady=10)
+                        return
+                    current_job["quantity"] = int(qt)
+                if current_job["picked"] < int(picked) or int(picked) > current_job["quantity"]:
+                    tk.Label(self.popup, text="Error: New Picked quantity cannot be updated.", fg="red").grid(row=7, columnspan=2, pady=10)
+                    return
+                current_job["picked"] = int(picked)
+                current_job["remain"] = int(qt) - int(picked)
+                if current_job["remain"] == 0 and status != "closed":
+                    tk.Label(self.popup, text="Error status: Status should be --closed--.", fg="red").grid(row=7, columnspan=2, pady=10)
+                    return
+                current_job["job_status"] = status
+                if status == "closed" and current_job["picked"] == current_job["quantity"]:
+                    current_job["job_order"] = 0
+                elif status == "paused" and current_job["picked"] < current_job["quantity"]:
+                    current_job["job_order"] = -1
+                elif status == "pending":
+                    if int(order) > 0:
+                        current_job["job_order"] = int(order)
+                    else:
+                        tk.Label(self.popup, text="Error job Order: Please Check Order Number.", fg="red").grid(row=7, columnspan=2, pady=10)
+                        return
+                else:
+                    tk.Label(self.popup, text="Error job Status: Please Check Order Status.", fg="red").grid(row=7, columnspan=2, pady=10)
+                    return
+                
+            except:
+                tk.Label(self.popup, text="Error Exception: Error on Job Update", fg="red").grid(row=7, columnspan=2, pady=10)
+                return
+            print(current_job)
+            print(type(current_job))
+            update_job(job_id, current_job)
+            tk.Label(self.popup, text="Job Updated Succcefully!!!", fg="green").grid(row=7, columnspan=2, pady=10)
+            return
+
         def cancel():
             print("cancel Job")
             self.popup.destroy()
+
+        def create_edit_popup(job):
+            self.popup = tk.Toplevel(self.toolbar)
+            self.popup.title(f'edit Job {job[0]}')
+            self.popup.geometry("300x350")
+            # lines Selection
+            tk.Label(self.popup, text="Job Reference: ").grid(row=0, column=0, padx=10, pady=10)
+            tk.Label(self.popup, text=job[1], font=("Arial", 12, "bold")).grid(row=0, column=1, padx=10, pady=10)
+            tk.Label(self.popup, text="Job Line").grid(row=1, column=0, padx=10, pady=10)
+            tk.Label(self.popup, text=job[2], font=("Arial", 12, "bold")).grid(row=1, column=1, padx=10, pady=10)
+            # Quantity to Produce
+            tk.Label(self.popup, text="Job Quantity:").grid(row=2, column=0, padx=10, pady=10)
+            qt_entry = tk.Entry(self.popup)
+            qt_entry.grid(row=2, column=1, padx=10, pady=10)
+            qt_entry.insert(0, job[3])
+            # picked Quantity
+            tk.Label(self.popup, text="Picked Quantity:").grid(row=3, column=0, padx=10, pady=10)
+            picked_entry = tk.Entry(self.popup)
+            picked_entry.grid(row=3, column=1, padx=10, pady=10)
+            picked_entry.insert(0, job[4])
+            # job Status
+            tk.Label(self.popup, text="Job Status:").grid(row=4, column=0, padx=10, pady=10)
+            status_combobox = ttk.Combobox(self.popup, values=["pending", "paused", "closed"], state="readonly")
+            status_combobox.grid(row=4, column=1, padx=10, pady=10)
+            status_combobox.set(job[6])
+            # Order of the Job
+            tk.Label(self.popup, text="Job Order:").grid(row=5, column=0, padx=10, pady=10)
+            jo_entry = tk.Entry(self.popup)
+            jo_entry.grid(row=5, column=1, padx=10, pady=10)
+            jo_entry.insert(0, job[7])
+            
+            # Button frame to pack buttons neatly side by side
+            button_frame = tk.Frame(self.popup)
+            button_frame.grid(row=6, columnspan=2, pady=15)
+
+            submit_btn = tk.Button(button_frame,
+                                    text="Update",
+                                    command=lambda: edit(
+                                        job[0], job[2], qt_entry.get(), picked_entry.get(), status_combobox.get(), jo_entry.get()
+                                        ),
+                                    width=10,
+                                    bg="#4CAF50", fg="white")
+            submit_btn.grid(row=0, column=0, padx=5)
+
+            cancel_btn = tk.Button(button_frame, text="Cancel", command=partial(cancel), width=10, bg="#f44336", fg="white")
+            cancel_btn.grid(row=0, column=1, padx=5)
+
+            self.popup.grab_set()
+            self.popup.transient(self)
+            self.popup.wait_window(self.popup)
 
         def create_job_popup():
             self.popup = tk.Toplevel(self.toolbar)
@@ -90,6 +186,11 @@ class PlannerBody(tk.Frame):
 
             cancel_btn = tk.Button(button_frame, text="Cancel", command=partial(cancel), width=10)
             cancel_btn.pack(side="left", padx=5)
+            
+            self.popup.grab_set()
+            self.popup.transient(self)
+            self.popup.wait_window(self.popup)
+
         def command(btn):
             print(f'{btn} button clicked')
             if btn == "New":
@@ -99,6 +200,21 @@ class PlannerBody(tk.Frame):
                 self.jobs = get_all_jobs()
                 for job in self.jobs:
                     self.tree.insert("", "end", values=job)
+            elif btn == "Edit":
+                selected_item = self.tree.selection()
+                if selected_item:
+                    item = self.tree.item(selected_item[0])  # Get the first selected item
+                    values = item['values']  # Get the values of the selected row
+                    print("Selected row values:", values[0])
+                    create_edit_popup(values)
+            elif btn == "Delete":
+                selected_item = self.tree.selection()
+                if selected_item:
+                    item = self.tree.item(selected_item[0])
+                    values = item['values']  # Get the values of the selected row
+                    job_id = values[0]  # Assuming the first value is the job ID
+                    delete_job(job_id)
+
         def search():
             filter_values = {k: e.get() for k, e in self.entries.items()}
             print("Search clicked. Values:", filter_values)

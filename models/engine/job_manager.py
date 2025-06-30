@@ -98,8 +98,17 @@ def get_all_jobs():
             ))
     return jobs
 
-def get_job_by_id(job_id):
+def get_job_by_id(job_id, line_id):
     """Get job by ID."""
+    line_conn = get_line_conn(line_id)
+    if line_conn is None:
+        print(f"Line {line_id} does not exist.")
+        return None
+    conn = get_connection(line_conn)
+    if conn is None:
+        print(f"Connection to line {line_id} failed.")
+        return None
+    set_db_conn(line_conn)
     job = get_obj("production_jobs", "id", job_id)
     if job is None:
         print(f"Job with ID {job_id} does not exist.")
