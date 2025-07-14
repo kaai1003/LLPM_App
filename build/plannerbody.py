@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from tkcalendar import DateEntry
 from PIL import Image, ImageTk
 from functools import partial
@@ -213,8 +214,12 @@ class PlannerBody(tk.Frame):
                     item = self.tree.item(selected_item[0])
                     values = item['values']  # Get the values of the selected row
                     job_id = values[0]  # Assuming the first value is the job ID
-                    delete_job(job_id)
-
+                    if delete_job(job_id):
+                        messagebox.showinfo("Success", f"Job {job_id} deleted successfully.")
+                        self.tree.delete(selected_item[0])
+                    else:
+                        messagebox.showerror("Error", f"Failed to delete job {job_id}.")
+                
         def search():
             filter_values = {k: e.get() for k, e in self.entries.items()}
             print("Search clicked. Values:", filter_values)

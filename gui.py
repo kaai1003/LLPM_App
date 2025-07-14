@@ -48,8 +48,8 @@ class PickingApp(tk.Tk):
     def create_layout(self):
         Header(self, self.app_type)
         Sidebar(self)
-        Prodbar(self)
-        Activeref(self)
+        #Prodbar(self)
+        #Activeref(self)
         PickingBody(self)
 
 class PackagingApp(tk.Tk):

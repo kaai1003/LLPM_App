@@ -5,6 +5,7 @@ import configparser
 from models.tracker import Tracker
 from models.harness import Harness
 from models.engine.db_manager import get_list_obj
+from models.engine.db_manager import get_obj
 
 CONFIG_FILE = "settings/config.ini"
 LINES_CONFIG = "settings/lines.ini"
@@ -62,6 +63,14 @@ def get_line_id():
     except:
         return None
 
+def get_line_details(line_id):
+    """Get Line Details"""
+    line_details = get_obj("lines", "line_id", line_id)
+    if line_details:
+        print(f"Line Details: {line_details}")
+        return line_details
+    return None
+    
 def insert_harness_track(refrence, cpt, line_id, process, status):
     """Insert Harness Track"""
     harness_track = {'reference': refrence,
