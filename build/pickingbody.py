@@ -2,14 +2,20 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+import datetime
+from models.job import Job
+from models.engine.picking_manager import update_orders
 from models.engine.app_tools import picking_db_conn
 from models.engine.app_tools import get_line_id
 from models.engine.app_tools import picking_db_conn
 from models.engine.app_tools import get_line_details
 from models.engine.db_manager import set_db_conn
 from models.engine.db_manager import get_connection
+from models.engine.picking_manager import check_fusebox
 from models.engine.shift import get_current_shift
 from models.engine.job_manager import jobs_by_line
+from models.engine.app_tools import insert_harness_track
+from models.engine.app_tools import insert_harness_details
 
 
 class PickingBody(tk.Frame):
@@ -30,6 +36,11 @@ class PickingBody(tk.Frame):
 
     def create_widgets(self):
         # get production lin details
+        self.scan_status = 0
+        self.fusebox = None
+        self.cpt = ""
+        self.picking_barcode = None
+        self.active_job = {}
         line_id = get_line_id()
         if not line_id:
             messagebox.showerror("Error", "Line ID not found in settings.")
@@ -50,6 +61,53 @@ class PickingBody(tk.Frame):
                 print("⚠️ Current time does not match any shift.")
         except Exception as e:
             print(f"❌ Error: {e}")
+        # ================
+        # Picking Process====>
+        # ================
+
+        def picking_scan(event):
+            input = self.text_entry.get().strip()
+            if not input or input == "":
+                return
+            if self.scan_status == 0:
+                if self.fusebox is not None:
+                    if input != self.fusebox:
+                        messagebox.showerror("Error", f"Invalid Fusebox Barcode: {input}")
+                        self.text_entry.delete(0, tk.END)
+                        return
+                else:
+                    if input != "OK":
+                        messagebox.showerror("Error", f"Invalid Barcode: {input}")
+                        self.text_entry.delete(0, tk.END)
+                        return
+                self.text_entry.delete(0, tk.END)
+                self.cpt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                self.picking_barcode = self.cpt + self.active_job["reference"]
+                print(f"Picking Barcode: {self.picking_barcode}")
+                # print picking label
+                print(f"Picking scan: {input}")
+                self.scan_status = 1
+            elif self.scan_status == 1:
+                if input != self.picking_barcode or self.picking_barcode is None:
+                    messagebox.showerror("Error", f"Invalid Picking Barcode: {input}")
+                    self.text_entry.delete(0, tk.END)
+                    return
+                self.text_entry.delete(0, tk.END)
+                self.active_job["picked"] += 1
+                self.active_job["remain"] -= 1
+                if self.active_job["remain"] == 0:
+                    self.active_job["job_status"] = "closed"
+                    self.active_job["job_order"] = 0
+                    Job(**self.active_job).update()
+                    update_orders(line_id)
+                else:
+                    Job(**self.active_job).update()
+                print(f"Harness From Ref : {self.active_job['reference']} is Picked")
+                insert_harness_track(self.active_job["reference"], self.cpt, line_id, 'Picking', 'OK')
+                insert_harness_details(self.active_job["reference"], self.cpt, line_id, 'Picking', 'OK')
+                self.scan_status = 0
+                self.create_widgets() # Refresh the UI
+            return
         # Configure row weights: 3/4 for top content, 1/4 for table
         self.rowconfigure(0, weight=0)  # Prod Bar
         self.rowconfigure(1, weight=0)  # Active Reference
@@ -101,7 +159,7 @@ class PickingBody(tk.Frame):
         active_qt = self.active_job.get("quantity", 0)
         active_picked = self.active_job.get("picked", 0)
         active_remain = self.active_job.get("remain", 0)
-        
+        self.fusebox = check_fusebox(active_ref)
         ref_label = tk.Label(self.activeref, text=f"Reference : {active_ref}", font=("Arial", 18, "bold"),
                          bg="#0CC506", fg="#0D0D0E")
         ref_label.pack(side="left", padx=(10, 0))
@@ -155,7 +213,9 @@ class PickingBody(tk.Frame):
         # Entry Field
         self.text_entry = tk.Entry(self.top_frame, font=("Arial", 16), justify="center", bg="#e0e0e0", relief="solid")
         self.text_entry.grid(row=2, column=0, ipadx=50, ipady=5, pady=(0, 20))
-
+        self.text_entry.focus_set()
+        self.text_entry.bind("<Return>", picking_scan)
+        self.bind("<Button-1>", lambda e: self.text_entry.focus_set())
         # ======================
         # Footer Frame (Table)
         # ======================

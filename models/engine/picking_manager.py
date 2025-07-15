@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from models.engine.job_manager import jobs_by_line
+from models.engine.db_manager import get_obj
 from models.job import Job
 
 def display_jobs(line_id):
@@ -46,3 +47,9 @@ def update_orders(line_id):
             job['job_order'] -= 1
             Job(**job).update()
     return
+
+def check_fusebox(ref):
+    obj_ref = get_obj("reference", "ref", ref)
+    if obj_ref["fuse_box"] == "NULL":
+        return None
+    return obj_ref["fuse_box"]
