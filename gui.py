@@ -41,7 +41,7 @@ class PickingApp(tk.Tk):
         super().__init__()
         self.app_type = app_type
         self.title("Picking App")
-        self.geometry("1100x600")
+        self.geometry("1920x1080")
         self.configure(bg="white")
         self.create_layout()
 
@@ -57,15 +57,15 @@ class PackagingApp(tk.Tk):
         super().__init__()
         self.app_type = app_type
         self.title("Packaging App")
-        self.geometry("1100x600")
+        self.geometry("1920x1080")
         self.configure(bg="white")
         self.create_layout()
 
     def create_layout(self):
         Header(self, self.app_type)
         Sidebar(self)
-        Prodbar(self)
-        Activebox(self)
+        #Prodbar(self)
+        #Activebox(self)
         PackagingBody(self)
 
 if __name__ == "__main__":

@@ -66,14 +66,15 @@ def get_current_shift(config_path="settings/config.ini"):
 
     return None, None
 
+def working_hours(config_path="settings/config.ini"):
+    """Get the configured working hours per shift."""
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    print(config.sections())
+    if 'SHIFTS' not in config or 'AppSettings' not in config:
+        return None
 
-# ✅ Example usage
-if __name__ == "__main__":
-    try:
-        shift_name, shift_range = get_current_shift()
-        if shift_name:
-            print(f"✅ Current time is within {shift_name} ({shift_range})")
-        else:
-            print("⚠️ Current time does not match any shift.")
-    except Exception as e:
-        print(f"❌ Error: {e}")
+    working_hours_per_shift = float(config["AppSettings"].get("working_hours", 0))
+    if working_hours_per_shift <= 0:
+        return None
+    return working_hours_per_shift

@@ -28,7 +28,7 @@ class Header(tk.Frame):
         
         # Container frame (orange background)
         container = tk.Frame(self, bg="#ff7900")
-        container.pack(side="right", padx=20, pady=10)
+        container.pack(side="right", padx=20, pady=20)
 
         # Vertical blue stripe (narrow frame)
         blue_strip = tk.Frame(container, bg="#0a2740", width=5)

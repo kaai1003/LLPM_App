@@ -22,6 +22,14 @@ class PickingBody(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent, bg="white")
         self.pack(fill="both", expand=True)
+        # Initialize variables
+        self.scan_status = 0
+        self.scan_msg = ""
+        self.scan_pic = ""
+        self.fusebox = None
+        self.cpt = ""
+        self.picking_barcode = None
+        self.active_job = {}
         # load database settings
         db_settings = picking_db_conn()
         if get_connection(db_settings) is None:
@@ -36,11 +44,7 @@ class PickingBody(tk.Frame):
 
     def create_widgets(self):
         # get production lin details
-        self.scan_status = 0
-        self.fusebox = None
-        self.cpt = ""
-        self.picking_barcode = None
-        self.active_job = {}
+        
         line_id = get_line_id()
         if not line_id:
             messagebox.showerror("Error", "Line ID not found in settings.")
@@ -87,6 +91,9 @@ class PickingBody(tk.Frame):
                 # print picking label
                 print(f"Picking scan: {input}")
                 self.scan_status = 1
+                self.scan_msg = "Confirm picking Label Barcode"
+                self.scan_pic = "./app_images/label.png"
+                self.create_widgets() # Refresh the UI
             elif self.scan_status == 1:
                 if input != self.picking_barcode or self.picking_barcode is None:
                     messagebox.showerror("Error", f"Invalid Picking Barcode: {input}")
@@ -159,7 +166,7 @@ class PickingBody(tk.Frame):
         active_qt = self.active_job.get("quantity", 0)
         active_picked = self.active_job.get("picked", 0)
         active_remain = self.active_job.get("remain", 0)
-        self.fusebox = check_fusebox(active_ref)
+        
         ref_label = tk.Label(self.activeref, text=f"Reference : {active_ref}", font=("Arial", 18, "bold"),
                          bg="#0CC506", fg="#0D0D0E")
         ref_label.pack(side="left", padx=(10, 0))
@@ -188,20 +195,25 @@ class PickingBody(tk.Frame):
         self.top_frame.grid(row=2, column=0, sticky="nsew")
         self.top_frame.columnconfigure(0, weight=1)
         self.top_frame.rowconfigure((0, 1), weight=1)
-        
+        self.fusebox = check_fusebox(active_ref)
+        if self.fusebox and self.scan_status == 0:
+            self.scan_msg = "Scan FuseBox Barcode"
+            self.scan_pic = "./app_images/fusebox.jpeg"
+           
+        elif self.scan_status == 0:
+            self.scan_msg = "Scan OK Barcode"
+            self.scan_pic = "./app_images/ok.webp"
         self.message_label = tk.Label(
             self.top_frame,
-            text="Please Press Enter Key",
+            text=self.scan_msg,
             font=("Arial", 30, "bold"),
             justify="center",
             bg="white",
             fg="#0515F8"
         )
-        self.message_label.grid(row=0, column=0, pady=(10, 0))
-
-        # Image
+            # Image
         try:
-            img = Image.open("../icons/computer-enter-key-finger-pressing-260nw-272983391.webp")
+            img = Image.open(self.scan_pic)
             img = img.resize((400, 200), Image.Resampling.LANCZOS)
             self.photo = ImageTk.PhotoImage(img)
             image_label = tk.Label(self.top_frame, image=self.photo, bg="white", borderwidth=1, relief="solid")
@@ -209,6 +221,9 @@ class PickingBody(tk.Frame):
         except Exception as e:
             image_label = tk.Label(self.top_frame, text="Image not found", bg="white")
             image_label.grid(row=1, column=0)
+        self.message_label.grid(row=0, column=0, pady=(10, 0))
+
+       
 
         # Entry Field
         self.text_entry = tk.Entry(self.top_frame, font=("Arial", 16), justify="center", bg="#e0e0e0", relief="solid")

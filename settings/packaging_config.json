@@ -2,7 +2,7 @@
     {
         "barcode": "reference",
         "prefix": "P",
-        "photo": "photo link"
+        "photo": "./app_images/packagingBox_harness-reference.png"
     },
     {
         "barcode": "nrgalia",
