@@ -80,7 +80,8 @@ class PackagingBody(tk.Frame):
                         messagebox.showerror("Error", f"Invalid barcode prefix. Expected: {self.barcode_prefix}")
                         self.text_entry.delete(0, tk.END)
                         return
-                    self.box_ref = self.box_ref[len(self.barcode_prefix):]
+                    self.box_ref = input[len(self.barcode_prefix):]
+                    print(f"Box Reference Scanned: {self.box_ref}")
                     ref_obj = get_obj("reference", "ref", self.box_ref)
                     if not ref_obj:
                         messagebox.showerror("Error", f"Reference {self.box_ref} not found in database.")
@@ -89,13 +90,8 @@ class PackagingBody(tk.Frame):
                         self.create_widgets()
                         self.text_entry.delete(0, tk.END)
                         return
-                    self.opned_box_ref = check_box_ref(self.box_ref)
-                    self.step_num += 1
-                    self.barcode_specs = self.box_config[self.step_num + 1]
-                    self.barcode_prefix = self.barcode_specs["prefix"]
-                    self.barcode_img = self.barcode_specs.get("photo", self.not_found)
-                    self.scan_msg = self.barcode_specs.get("barcode", "Unknown") + f" {self.scan_step}"
-                    self.create_widgets()
+                    self.opened_box_ref = check_box_ref(self.box_ref)
+                    self.next_step()
                     return
                 elif self.barcode_specs["barcode"] == "nrgalia":
                     if not input.startswith(self.barcode_prefix):
@@ -103,7 +99,7 @@ class PackagingBody(tk.Frame):
                         self.text_entry.delete(0, tk.END)
                         return
                     nr_galia = input[len(self.barcode_prefix):]
-                    if self.opned_box_ref:
+                    if self.opened_box_ref:
                         if self.opened_box_ref["nr_galia"] != nr_galia:
                             messagebox.showerror("Error", f"NR Galia {nr_galia} does not match opened box reference.")
                             self.init_vars()
@@ -111,24 +107,37 @@ class PackagingBody(tk.Frame):
                             self.create_widgets()
                             self.text_entry.delete(0, tk.END)
                             return
-                        self.status_galia = "open"
-                        self.current_galia = Galia(**self.opned_box_ref)
-                        print(f"Galia {nr_galia} is Opened and {self.opned_box_ref['scanned_q']} Fx Scanned")
+                        self.current_galia = Galia(**self.opened_box_ref)
+                        self.status_galia = self.opened_box_ref["status"]
+                        print(f"Galia {nr_galia} is Opened and {self.opened_box_ref['scanned_q']} Fx Scanned")
+                        self.next_step()
+                        return
                      # check if nrgalia exist in Database
                     galia_obj = get_obj("galia", "nr_galia", nr_galia)
                     if galia_obj is None:
-                        self.status_galia = "new"
                         self.current_galia = Galia()
+                        self.current_galia.status = "open"
                         self.current_galia.nr_galia = nr_galia
                         self.current_galia.reference = self.box_ref
                         self.current_galia.line_id = line_id
                         print(f"New Galia {nr_galia} Scanned")
                     elif galia_obj["status"] == "closed":
-                        status_galia = "closed"
+                        messagebox.showerror("Error", f"Galia {nr_galia} is already closed.")
+                        self.init_vars()
+                        self.activebox_vars()
+                        self.create_widgets()
+                        self.text_entry.delete(0, tk.END)
                         print(f"Galia {nr_galia[len(self.barcode_prefix):]} is Already Closed")
+                        return
                     elif galia_obj["status"] == "open":
+                        messagebox.showerror("Error", f"Galia {nr_galia} is already opened with reference {galia_obj['reference']}.")
+                        self.init_vars()
+                        self.activebox_vars()
+                        self.create_widgets()
+                        self.text_entry.delete(0, tk.END)
                         print(f"---Error!!!!---: Galia {nr_galia} is Already Opened with Different Reference {galia_obj['reference']}")
                         print("Please Check the Scanned Galia!!!")
+                        return
                     
         # Configure row weights: 3/4 for top content, 1/4 for table
         self.rowconfigure(0, weight=0)  # prodbar
@@ -355,3 +364,14 @@ class PackagingBody(tk.Frame):
         self.box_q = 0
         self.box_p = 0
         self.box_r = 0
+
+    def next_step(self):
+        """Proceed to the next step in the packaging process"""
+        self.step_num += 1
+        if self.step_num < self.box_barcode_count:
+            self.barcode_specs = self.box_config[self.step_num]
+            self.barcode_prefix = self.barcode_specs["prefix"]
+            self.barcode_img = self.barcode_specs.get("photo", self.not_found)
+            self.scan_msg = self.barcode_specs.get("barcode", "Unknown") + f" {self.scan_step}"
+            self.create_widgets()
+        return
