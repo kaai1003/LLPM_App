@@ -2,17 +2,17 @@
     {
         "barcode": "reference",
         "prefix": "P",
-        "photo": "./app_images/packagingBox_harness-reference.png"
+        "photo": "./app_images/glia_ref.jpg"
     },
     {
         "barcode": "nrgalia",
         "prefix": "S",
-        "photo": "photo link"
+        "photo": "./app_images/glia_number.jpg"
     },
     {
         "barcode": "quantity",
         "prefix": "Q",
-        "photo": "photo link"
+        "photo": "./app_images/glia_quantity.jpg"
     },
     {
         "barcode": "box_type",

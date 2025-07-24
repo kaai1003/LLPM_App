@@ -99,7 +99,8 @@ class PackagingBody(tk.Frame):
                         self.text_entry.delete(0, tk.END)
                         return
                     nr_galia = input[len(self.barcode_prefix):]
-                    if self.opened_box_ref:
+                    if self.opened_box_ref and self.opened_box_ref["line_id"] == line_id:
+                        print(f"Opened Box Reference: {self.opened_box_ref}")
                         if self.opened_box_ref["nr_galia"] != nr_galia:
                             messagebox.showerror("Error", f"NR Galia {nr_galia} does not match opened box reference.")
                             self.init_vars()
@@ -120,6 +121,8 @@ class PackagingBody(tk.Frame):
                         self.current_galia.nr_galia = nr_galia
                         self.current_galia.reference = self.box_ref
                         self.current_galia.line_id = line_id
+                        self.new_box = True
+                        self.next_step()
                         print(f"New Galia {nr_galia} Scanned")
                     elif galia_obj["status"] == "closed":
                         messagebox.showerror("Error", f"Galia {nr_galia} is already closed.")
@@ -131,13 +134,48 @@ class PackagingBody(tk.Frame):
                         return
                     elif galia_obj["status"] == "open":
                         messagebox.showerror("Error", f"Galia {nr_galia} is already opened with reference {galia_obj['reference']}.")
+                        print(f"---Error!!!!---: Galia {nr_galia} is Already Opened with Different Reference {galia_obj['reference']}")
+                        print("Please Check the Scanned Galia!!!")
                         self.init_vars()
                         self.activebox_vars()
                         self.create_widgets()
                         self.text_entry.delete(0, tk.END)
-                        print(f"---Error!!!!---: Galia {nr_galia} is Already Opened with Different Reference {galia_obj['reference']}")
-                        print("Please Check the Scanned Galia!!!")
                         return
+                elif self.barcode_specs["barcode"] == "quantity":
+                    if not input.startswith(self.barcode_prefix):
+                        messagebox.showerror("Error", f"Invalid barcode prefix. Expected: {self.barcode_prefix}")
+                        self.text_entry.delete(0, tk.END)
+                        return
+                    try:
+                        quantity = int(input[len(self.barcode_prefix):])
+                    except ValueError:
+                        messagebox.showerror("Error", "Invalid quantity scanned. Please scan a valid number.")
+                        self.text_entry.delete(0, tk.END)
+                        return
+                    if quantity <= 0:
+                        messagebox.showerror("Error", "Quantity must be greater than zero.")
+                        self.text_entry.delete(0, tk.END)
+                        return
+                    if self.new_box == False:
+                        if quantity != self.current_galia.total_q:
+                            messagebox.showerror("Error", f"Scanned quantity {quantity} does not match opened Galia quantity {self.current_galia.scanned_q}.")
+                            self.init_vars()
+                            self.activebox_vars()
+                            self.create_widgets()
+                            self.text_entry.delete(0, tk.END)
+                            return
+                        self.text_entry.delete(0, tk.END)
+                        self.current_galia.update()
+                        self.next_step()
+                        return
+                    self.current_galia.total_q = quantity
+                    self.current_galia.scanned_q = 0
+                    self.current_galia.remain_q = quantity
+                    self.current_galia.save()
+                    print(f"---New Galia {self.current_galia.nr_galia} Created---")
+                    self.text_entry.delete(0, tk.END)
+                    self.next_step()
+                    return
                     
         # Configure row weights: 3/4 for top content, 1/4 for table
         self.rowconfigure(0, weight=0)  # prodbar
@@ -329,6 +367,7 @@ class PackagingBody(tk.Frame):
     
     def init_vars(self):
         # Initialize variables or settings if needed
+        self.new_box = False
         self.step_num = 0
         self.not_found = "./app_images/not_found.jpg"
         self.packing_config = check_packaging_config()
