@@ -17,37 +17,37 @@
     {
         "barcode": "box_type",
         "prefix": "V",
-        "photo": "photo link"
+        "photo": "./app_images/ok-1.png"
     }
 ],
 "FX": {"PTA": [
         {"barcode": "reference",
         "prefix": "R",
-        "photo": "photo link"},
+        "photo": "./app_images/pta_ref.jpg"},
         {"barcode": "compteur",
         "prefix": "P",
         "length": 5,
-        "photo": "photo link"}
+        "photo": "./app_images/pta_counter.jpg"}
     ],
     "BOL": [
         {"barcode": "reference",
         "prefix": "",
-        "photo": "photo link"},
+        "photo": "./app_images/BOL_ref.jpg"},
         {"barcode": "compteur",
         "prefix": "A",
         "length": 5,
-        "photo": "photo link"},
+        "photo": "./app_images/BOL1_COUNTER.jpg"},
         {"barcode": "box_type",
         "prefix": "B",
-        "photo": "photo link"}
+        "photo": "./app_images/ok-1.png"}
     ],
     "BOL2": [
         {"barcode": "reference",
         "prefix": "PA",
-        "photo": "photo link"},
+        "photo": "./app_images/camera_ref.jpg"},
         {"barcode": "compteur",
         "prefix": "PA",
         "length": 5,
-        "photo": "photo link"}
+        "photo": "./app_images/camera_counter.jpg"}
     ]}
 }
