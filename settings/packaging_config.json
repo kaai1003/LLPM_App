@@ -2,52 +2,35 @@
     {
         "barcode": "reference",
         "prefix": "P",
-        "photo": "./app_images/glia_ref.jpg"
+        "photo": "./app_images/xjk_galia_ref.jpg"
     },
     {
         "barcode": "nrgalia",
         "prefix": "S",
-        "photo": "./app_images/glia_number.jpg"
+        "photo": "./app_images/xjk_galia_nr.jpg"
     },
     {
         "barcode": "quantity",
         "prefix": "Q",
-        "photo": "./app_images/glia_quantity.jpg"
-    },
-    {
-        "barcode": "box_type",
-        "prefix": "V",
-        "photo": "./app_images/ok-1.png"
+        "photo": "./app_images/xjk_galia_q.jpg"
     }
 ],
 "FX": {"PTA": [
         {"barcode": "reference",
-        "prefix": "R",
-        "photo": "./app_images/pta_ref.jpg"},
+        "prefix": "A",
+        "photo": "./app_images/xjk_pta_ref.jpg"},
         {"barcode": "compteur",
-        "prefix": "P",
+        "prefix": "A",
         "length": 5,
-        "photo": "./app_images/pta_counter.jpg"}
+        "photo": "./app_images/xjk_pta_cpt.jpg"}
     ],
     "BOL": [
         {"barcode": "reference",
         "prefix": "",
-        "photo": "./app_images/BOL_ref.jpg"},
+        "photo": "./app_images/xjk_bol_ref.jpg"},
         {"barcode": "compteur",
-        "prefix": "A",
+        "prefix": "E",
         "length": 5,
-        "photo": "./app_images/BOL1_COUNTER.jpg"},
-        {"barcode": "box_type",
-        "prefix": "B",
-        "photo": "./app_images/ok-1.png"}
-    ],
-    "BOL2": [
-        {"barcode": "reference",
-        "prefix": "PA",
-        "photo": "./app_images/camera_ref.jpg"},
-        {"barcode": "compteur",
-        "prefix": "PA",
-        "length": 5,
-        "photo": "./app_images/camera_counter.jpg"}
+        "photo": "./app_images/xjk_bol_cpt.jpg"}
     ]}
 }

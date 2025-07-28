@@ -51,7 +51,7 @@ class PackagingBody(tk.Frame):
         print(f"Line ID: {line_id}")
         line_details = get_line_details(line_id)
         if not line_details:
-            messagebox.showerror("Error", f"Line {line_id} not found in configuration.")
+            messagebox.showerror("Error", f"Line {line_id} not found in Database.")
             return
         project = line_details.get("project", "Unknown")
         famille = line_details.get("famille", "Unknown")
@@ -570,6 +570,13 @@ class PackagingBody(tk.Frame):
         self.current_galia = None
         self.horking_hours = working_hours()
 
+    def activebox_set(self, box_number, box_ref, box_q, box_p, box_r):
+        self.box_number = box_number
+        self.box_ref = box_ref
+        self.box_q = box_q
+        self.box_p = box_p
+        self.box_r = box_r
+
     def activebox_vars(self):
         # Initialize active box variables
         self.box_number = ""
@@ -613,6 +620,11 @@ class PackagingBody(tk.Frame):
             print(f"---New Galia {self.current_galia.nr_galia} Created---")
             print("-----------Box Scan Completed-------------")
             print(f"Scanned Box: {self.current_galia.to_dict()}")
+            self.activebox_set(self.current_galia.nr_galia,
+                               self.current_galia.reference,
+                               self.current_galia.total_q,
+                               self.current_galia.scanned_q,
+                               self.current_galia.remain_q)
             self.step_num = 0
             self.barcode_specs = self.label_barcodes[self.step_num]
             self.barcode_prefix = self.barcode_specs["prefix"]

@@ -2,6 +2,8 @@
 """App Tools Functions"""
 
 import configparser
+import json
+import os
 from models.tracker import Tracker
 from models.harness import Harness
 from models.engine.db_manager import get_list_obj
@@ -94,3 +96,8 @@ def insert_harness_details(refrence, cpt, line_id, process, result):
     Harness(**harness_details).save()
     print(f"Harness Track {refrence} Inserted with Compteur {cpt}")
     return True
+
+def set_dashboard_config(dashboard):
+    """Set DB connection as env variable"""
+    # set db_conn dictionnary as windows env variable
+    os.environ["DASHBOARD_CONFIG"] = json.dumps(dashboard)

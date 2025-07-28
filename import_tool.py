@@ -10,12 +10,18 @@ from models.engine.db_manager import get_connection
 from models.engine.db_manager import get_obj
 from models.engine.db_manager import get_all
 from models.engine.db_manager import load_csv
+from models.engine.app_tools import picking_db_conn
+from models.engine.db_manager import set_db_conn
 
-if get_connection():
-    print("Connection Established")
-else:
-    print("Connection Failed")
+# load database settings
+db_settings = picking_db_conn()
+if get_connection(db_settings) is None:
+    print("Error Connecting to Database")
+    messagebox.showerror("Error Connecting to Database.", 
+                            "Please check your database settings in the config file.")
     exit(1)
+print(db_settings)
+set_db_conn(db_settings)
 
 print("--------Welcome to Tool Importer--------")
 print("Select table to Import:\n1- Users\n2- Jobs \n3- Lines\n4- Process\n5- Projects\n6- References")
