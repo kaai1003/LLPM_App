@@ -8,6 +8,7 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 from models.engine.shift import parse_shift_datetime_range
+from datetime import datetime, timedelta
 
 
 def get_connection(db_conn):
@@ -155,6 +156,53 @@ def get_scanned_harnesses_by_shift(shift_range):
         cursor.execute(query, (start_dt, end_dt))
         obj = cursor.fetchall()
         return [dict(item) for item in obj]
+
+    except Exception as e:
+        print("Error:", e)
+        return None
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_scanned_fx_per_hour(shift_range):
+    """
+    Get the count of scanned FX grouped by hour for the current shift range today.
+    Returns a list of (hour, count) tuples, where hour is formatted as 'HH:00'.
+    """
+    db_conn_str = os.environ.get("DB_CONN", "{}")
+    DB_CONFIG = json.loads(db_conn_str)
+    conn = get_connection(DB_CONFIG)
+    if conn is None:
+        print("Connection failed")
+        return None
+
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        start_dt, end_dt = parse_shift_datetime_range(shift_range)
+
+        query = sql.SQL("""
+            SELECT DATE_TRUNC('hour', created_at) AS hour_slot, COUNT(*) AS count
+            FROM scanned_fx
+            WHERE created_at >= %s AND created_at < %s
+            GROUP BY hour_slot
+            ORDER BY hour_slot
+        """)
+        cursor.execute(query, (start_dt, end_dt))
+        results = cursor.fetchall()
+
+        # Convert result to a dict for easy lookup
+        hourly_data = {row["hour_slot"].strftime("%H:%M"): row["count"] for row in results}
+
+        # Fill missing hours with 0
+        current = start_dt
+        hourly_counts = []
+        while current < end_dt:
+            hour_str = current.strftime("%H:%M")
+            hourly_counts.append((hour_str, hourly_data.get(hour_str, 0)))
+            current += timedelta(hours=1)
+
+        return hourly_counts
 
     except Exception as e:
         print("Error:", e)

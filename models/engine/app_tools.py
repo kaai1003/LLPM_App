@@ -8,6 +8,7 @@ from models.tracker import Tracker
 from models.harness import Harness
 from models.engine.db_manager import get_list_obj
 from models.engine.db_manager import get_obj
+from datetime import datetime, timedelta
 
 CONFIG_FILE = "settings/config.ini"
 LINES_CONFIG = "settings/lines.ini"
@@ -140,3 +141,50 @@ def set_dashboard_config(data, config_path=DASH_CONFIG):
     # Write back to the file
     with open(config_path, 'w') as configfile:
         config.write(configfile)
+
+def get_expected_fx(shift_range, shift_target):
+    """
+    Calculate expected number of scanned FX based on elapsed time in shift.
+    
+    Parameters:
+        shift_range (str): shift time range in format "HH:MM-HH:MM"
+        shift_target (int): total expected scanned FX for the full shift
+
+    Returns:
+        int: expected FX count at current time
+    """
+    try:
+        # Parse shift range
+        start_str, end_str = shift_range.split('-')
+        now = datetime.now()
+        today = now.date()
+
+        start_time = datetime.strptime(start_str, "%H:%M").time()
+        end_time = datetime.strptime(end_str, "%H:%M").time()
+
+        start_dt = datetime.combine(today, start_time)
+        end_dt = datetime.combine(today, end_time)
+
+        # Handle overnight shifts (e.g., 22:00–06:00)
+        if end_dt <= start_dt:
+            end_dt += timedelta(days=1)
+
+        # Clip current time between start and end
+        if now < start_dt:
+            elapsed_minutes = 0
+        elif now >= end_dt:
+            elapsed_minutes = (end_dt - start_dt).total_seconds() / 60
+        else:
+            elapsed_minutes = (now - start_dt).total_seconds() / 60
+
+        total_minutes = (end_dt - start_dt).total_seconds() / 60
+
+        if total_minutes == 0:
+            return 0
+
+        expected = (elapsed_minutes / total_minutes) * shift_target
+        return int(expected)
+
+    except Exception as e:
+        print("Error in get_expected_fx:", e)
+        return 0

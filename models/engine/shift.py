@@ -2,7 +2,7 @@
 
 
 import configparser
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 
 
 def parse_time_range(shift_range):
