@@ -84,7 +84,7 @@ class Sidebar(tk.Frame):
                 tk.Label(self.popup, text="Error: Effecience must be a number.", fg="red").grid(row=7, columnspan=2, pady=10)
                 print("Effecience must be a number")
                 return
-            dashboard_settings["effecience"] = eff
+            dashboard_settings["effeciclsence"] = eff
             set_dashboard_config(dashboard_settings)
             print("Dashboard Settings Updated:", dashboard_settings)
             self.popup.destroy()

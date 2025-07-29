@@ -11,6 +11,7 @@ from models.engine.db_manager import get_obj
 
 CONFIG_FILE = "settings/config.ini"
 LINES_CONFIG = "settings/lines.ini"
+DASH_CONFIG = "settings/dashboard.ini"
 
 def load_settings():
     config = configparser.ConfigParser()
@@ -97,7 +98,45 @@ def insert_harness_details(refrence, cpt, line_id, process, result):
     print(f"Harness Track {refrence} Inserted with Compteur {cpt}")
     return True
 
-def set_dashboard_config(dashboard):
-    """Set DB connection as env variable"""
-    # set db_conn dictionnary as windows env variable
-    os.environ["DASHBOARD_CONFIG"] = json.dumps(dashboard)
+
+def get_dashboard_config(config_path=DASH_CONFIG):
+    """Retrieve Dashboard config as a dictionary from the INI file"""
+    config = configparser.ConfigParser()
+    if not os.path.exists(config_path):
+        return {}
+
+    config.read(config_path)
+
+    if "Dashboard" not in config:
+        return {}
+
+    # Convert the values to int where possible
+    result = {}
+    for key, value in config["Dashboard"].items():
+        value = value.strip()
+        if value == "":
+            result[key] = ""
+        else:
+            try:
+                result[key] = int(value)
+            except ValueError:
+                result[key] = value
+    return result
+
+def set_dashboard_config(data, config_path=DASH_CONFIG):
+    """Create or update the Dashboard section in the INI config file"""
+    config = configparser.ConfigParser()
+    
+    # Load existing file if it exists
+    if os.path.exists(config_path):
+        config.read(config_path)
+
+    if "Dashboard" not in config:
+        config["Dashboard"] = {}
+
+    for key, value in data.items():
+        config["Dashboard"][key] = str(value)
+
+    # Write back to the file
+    with open(config_path, 'w') as configfile:
+        config.write(configfile)

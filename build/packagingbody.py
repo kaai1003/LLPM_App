@@ -682,6 +682,7 @@ class PackagingBody(tk.Frame):
                     self.scan_msg = self.barcode_specs.get("barcode", "Unknown") + f" {self.scan_step}"
                     self.barcode_prefix = self.barcode_specs["prefix"]
                     self.barcode_img = self.barcode_specs.get("photo", self.not_found)
+                    self.fx_cpt = None
                     self.create_widgets()
                     return
                 else:
@@ -698,6 +699,12 @@ class PackagingBody(tk.Frame):
                     self.barcode_prefix = self.barcode_specs["prefix"]
                     self.barcode_img = self.barcode_specs.get("photo", self.not_found)
                     self.scan_msg = self.barcode_specs.get("barcode", "Unknown") + f" {self.scan_step}"
+                    self.fx_cpt = None
+                    self.activebox_set(self.current_galia.nr_galia,
+                                       self.current_galia.reference,
+                                       self.current_galia.total_q,
+                                       self.current_galia.scanned_q,
+                                       self.current_galia.remain_q)
                     self.create_widgets()
                     return
         elif self.scan_step == "VALIDATION":

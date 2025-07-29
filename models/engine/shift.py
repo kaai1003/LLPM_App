@@ -12,6 +12,31 @@ def parse_time_range(shift_range):
     end = datetime.strptime(end_str.strip(), "%H:%M").time()
     return start, end
 
+def parse_shift_datetime_range(shift_range):
+    """
+    Convert '22:00-06:00' to datetime range for current shift
+    """
+    now = datetime.now()
+    start_str, end_str = shift_range.split('-')
+    
+    # Updated parsing to match new format 'HH:MM'
+    start_time = datetime.strptime(start_str.strip(), "%H:%M").time()
+    end_time = datetime.strptime(end_str.strip(), "%H:%M").time()
+
+    today = now.date()
+    start_datetime = datetime.combine(today, start_time)
+    end_datetime = datetime.combine(today, end_time)
+
+    # Night shift case: start time > end time (e.g., 22:00-06:00)
+    if start_time > end_time:
+        if now.time() < end_time:
+            # Current time is after midnight but before end (e.g., 01:00)
+            start_datetime -= timedelta(days=1)
+        else:
+            # Current time is after start (e.g., 23:00), so end is next day
+            end_datetime += timedelta(days=1)
+
+    return start_datetime, end_datetime
 
 def time_diff_in_hours(start, end):
     """Compute difference in hours between two time objects (handle overnight)."""

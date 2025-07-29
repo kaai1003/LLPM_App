@@ -1,18 +1,22 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from models.engine.app_tools import picking_db_conn
 from models.engine.app_tools import get_line_details
 from models.engine.db_manager import set_db_conn
 from models.engine.db_manager import get_connection
+from models.engine.db_manager import get_scanned_harnesses_by_shift
 from models.engine.shift import get_current_shift
 from models.engine.shift import working_hours
 from models.engine.app_tools import get_line_id
+from models.engine.app_tools import get_dashboard_config
 from models.engine.packaging_manager import check_packaging_config
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import datetime
 import math
 import os
+import json
 
 class ProductionDashboard(tk.Tk):
     def __init__(self):
@@ -33,8 +37,9 @@ class ProductionDashboard(tk.Tk):
         if not self.packing_config:
             messagebox.showerror("Error", "Packaging configuration not found.")
             exit(1)
-        self.production_config = os.environ.get("DASHBOARD_CONFIG", {})
+        self.production_config = get_dashboard_config()
         print(self.production_config)
+        self.scanned_fx = {}
         # Simulated data
         self.load_data()
 
@@ -43,6 +48,19 @@ class ProductionDashboard(tk.Tk):
         self.create_header2()
         self.create_charts()
         self.create_efficiency_gauge()
+        self.refresh_dashboard()
+
+    def refresh_dashboard(self):
+        """Reload data and refresh dashboard every 3 seconds."""
+        self.load_data()
+        
+        # Optionally refresh UI components if they change over time
+        # You may want to re-create header2 or update existing widgets
+
+        print("🔁 Dashboard refreshed at", datetime.datetime.now())
+
+        # Call this method again after 3000 milliseconds (3 seconds)
+        self.after(3000, self.refresh_dashboard)
 
     def load_data(self):
         line_id = get_line_id()
@@ -63,11 +81,12 @@ class ProductionDashboard(tk.Tk):
                 print("⚠️ Current time does not match any shift.")
         except Exception as e:
             print(f"❌ Error: {e}")
+        self.scanned_fx = get_scanned_harnesses_by_shift(shift_range)
+        print(f"Scanned FX: {self.scanned_fx}")
         supervisor = self.production_config.get("team_speaker", "Unknown")
         project = line_details.get("project", "Unknown")
         famille = line_details.get("famille", "Unknown")
         line = line_details.get("line_id", "Unknown")
-        shift = shift_range
         ops = self.production_config.get("line_operators", 0)
         pops = self.production_config.get("present_operators", 0)
         aop = ops - pops
@@ -85,7 +104,7 @@ class ProductionDashboard(tk.Tk):
 
         self.shift_target = self.production_config.get("shift_target", 0)
         self.expected = self.production_config.get("target_per_hour", 0)
-        self.delivered = 80 #harness Scanned Count
+        self.delivered = len(self.scanned_fx) #harness Scanned Count
         self.gap = self.delivered - self.expected
         self.efficiency_values = [60.62, 53.89, 80.68, 22.01, 26.94, 76.13, 0, 0, 0]
         self.output_per_hour = [15, 8, 12, 10, 4, 6, 0, 0, 0]
@@ -180,6 +199,7 @@ class ProductionDashboard(tk.Tk):
         canvas.create_oval(120, 120, 130, 130, fill='black')
 
         canvas.create_text(125, 140, text=f"{eff_percent:.1f}%", font=("Arial", 16, "bold"), fill='black')
+
 
 
 if __name__ == "__main__":

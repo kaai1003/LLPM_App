@@ -7,6 +7,7 @@ import os
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
+from models.engine.shift import parse_shift_datetime_range
 
 
 def get_connection(db_conn):
@@ -127,6 +128,38 @@ def get_all(table):
     except Exception as e:
         print(e)
         return None
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_scanned_harnesses_by_shift(shift_range):
+    """
+    Get scanned harnesses for the current shift range today.
+    shift_range format: 'HH:MM-HH:MM' (e.g., '22:00-06:00')
+    """
+    db_conn_str = os.environ.get("DB_CONN", "{}")
+    DB_CONFIG = json.loads(db_conn_str)
+    conn = get_connection(DB_CONFIG)
+    if conn is None:
+        print("Connection failed")
+        return None
+
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        start_dt, end_dt = parse_shift_datetime_range(shift_range)
+
+        query = sql.SQL("""
+            SELECT * FROM scanned_fx
+            WHERE created_at >= %s AND created_at < %s
+        """)
+        cursor.execute(query, (start_dt, end_dt))
+        obj = cursor.fetchall()
+        return [dict(item) for item in obj]
+
+    except Exception as e:
+        print("Error:", e)
+        return None
+
     finally:
         cursor.close()
         conn.close()
