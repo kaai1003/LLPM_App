@@ -19,7 +19,8 @@ from models.engine.app_tools import insert_harness_details
 
 
 class PickingBody(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, user_infos):
+        self.user_infos = user_infos
         super().__init__(parent, bg="white")
         self.pack(fill="both", expand=True)
         # Initialize variables

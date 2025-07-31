@@ -101,7 +101,7 @@ class ProductionDashboard(tk.Tk):
         
         self.ax1.clear()
         self.ax1.plot(x_labels, y_values, marker='o', label='Efficiency')
-        self.ax1.axhline(y=100, color='green', linestyle='--', label='Target: 100%')
+        self.ax1.axhline(y=self.effecience, color='green', linestyle='--', label=f'Target: {self.effecience}%')
         self.ax1.set_title("Efficiency per Hour")
         self.ax1.set_ylabel("Efficiency %")
         self.ax1.set_xlabel("Time Slots")
@@ -163,7 +163,8 @@ class ProductionDashboard(tk.Tk):
         self.line = line_details.get("line_id", "Unknown")
         self.ops = self.production_config.get("line_operators", 0)
         self.pops = self.production_config.get("present_operators", 0)
-        self.effecience = self.pops = self.production_config.get("effecience", 100)
+        self.effecience = self.production_config.get("effecience", 100)
+        print(f"-------config prod : {self.production_config}")
         self.aop = self.ops - self.pops
         self.prod_infos = [
             ("Supervisor", self.supervisor, "#ff7514"),

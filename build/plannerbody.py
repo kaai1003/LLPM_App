@@ -18,7 +18,8 @@ from models.engine.db_manager import set_db_conn
 from models.engine.app_tools import get_line_conn
 
 class PlannerBody(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, user_infos):
+        self.user_infos = user_infos
         super().__init__(parent, bg="white")
         self.pack(fill="both", expand=True)
         self.new_icon = ImageTk.PhotoImage(Image.open("./icons/new.png").resize((24, 24), Image.Resampling.LANCZOS))

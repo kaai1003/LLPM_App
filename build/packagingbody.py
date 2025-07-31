@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from datetime import datetime
 from models.galia import Galia
 from models.scanned import Scanned
 from models.engine.app_tools import picking_db_conn
@@ -15,11 +16,13 @@ from models.engine.packaging_manager import check_packaging_config
 from models.engine.packaging_manager import check_box_ref
 from models.engine.packaging_manager import check_cpt_hns
 from models.engine.packaging_manager import list_hns_labels
+from models.engine.printer import tsc_label
 from PIL import Image, ImageTk
 
 class PackagingBody(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, user_infos):
         super().__init__(parent, bg="white")
+        self.user_infos = user_infos
         self.pack(fill="both", expand=True)
          # load database settings
         db_settings = picking_db_conn()
@@ -724,6 +727,12 @@ class PackagingBody(tk.Frame):
             print(f"Scanned Box: {self.current_galia.to_dict()}")
             ####Print the Box Label####
             ###########################
+            tsc_label(self.current_galia.nr_galia,
+                      self.current_galia.reference,
+                      self.current_galia.total_q,
+                      self.user_infos["usercard"],
+                      datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                      )
             self.init_vars()
             self.activebox_vars()
             self.create_widgets()

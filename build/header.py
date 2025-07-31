@@ -3,11 +3,13 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+import datetime
 
 class Header(tk.Frame):
-    def __init__(self, parent, app_type):
+    def __init__(self, parent, app_type, user_infos):
         super().__init__(parent, bg="#ff7900", height=60)
         self.app_type = app_type
+        self.user_infos = user_infos
         self.pack(side="top", fill="x")
         self.create_widgets()
 
@@ -35,10 +37,13 @@ class Header(tk.Frame):
         blue_strip.pack(side="left", fill="y")
 
         # User info text (white, right-aligned)
+        date_now = datetime.datetime.now().strftime("%d/%m/%Y")
+        user_name = self.user_infos.get("username", "Guest")
+        user_role = self.user_infos.get("role", "User")
         user_text = (
-            "27/04/2015 14:24:20\n"
-            "User : Username\n"
-            "Role : Admin"
+            f"{date_now}\n"
+            f"User : {user_name}\n"
+            f"Role : {user_role}"
         )
 
         user_info = tk.Label(
@@ -48,7 +53,7 @@ class Header(tk.Frame):
             fg="white",
             justify="left",         # Align left inside the text block
             anchor="w",             # Align text to the left edge of label
-            font=("Arial", 10),
+            font=("Arial", 13, "bold"),
             padx=10,                # Padding between text and blue strip
         )
         user_info.pack(side="left", fill="both", expand=True)

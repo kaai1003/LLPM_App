@@ -7,8 +7,9 @@ from functools import partial
 from models.engine.app_tools import set_dashboard_config
 
 class Sidebar(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, user_infos):
         super().__init__(parent, bg="#002147", width=120)
+        self.user_infos = user_infos
         self.pack(side="left", fill="y")
         self.create_widgets()
 
