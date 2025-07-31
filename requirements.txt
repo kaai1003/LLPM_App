@@ -1,0 +1,5 @@
+keyboard==0.13.5
+matplotlib==3.10.3
+Pillow==11.3.0
+psycopg2==2.9.10
+tkcalendar==1.6.1
