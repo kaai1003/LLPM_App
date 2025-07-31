@@ -9,6 +9,7 @@ from models.harness import Harness
 from models.engine.db_manager import get_list_obj
 from models.engine.db_manager import get_obj
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 CONFIG_FILE = "settings/config.ini"
 LINES_CONFIG = "settings/lines.ini"
@@ -145,7 +146,7 @@ def set_dashboard_config(data, config_path=DASH_CONFIG):
 def get_expected_fx(shift_range, shift_target):
     """
     Calculate expected number of scanned FX based on elapsed time in shift.
-    
+
     Parameters:
         shift_range (str): shift time range in format "HH:MM-HH:MM"
         shift_target (int): total expected scanned FX for the full shift
@@ -168,8 +169,10 @@ def get_expected_fx(shift_range, shift_target):
         # Handle overnight shifts (e.g., 22:00–06:00)
         if end_dt <= start_dt:
             end_dt += timedelta(days=1)
+            if now.time() < start_time:
+                now += timedelta(days=1)  # Treat 02:00 as after 22:00
 
-        # Clip current time between start and end
+        # Calculate elapsed time
         if now < start_dt:
             elapsed_minutes = 0
         elif now >= end_dt:
@@ -188,3 +191,141 @@ def get_expected_fx(shift_range, shift_target):
     except Exception as e:
         print("Error in get_expected_fx:", e)
         return 0
+
+def calculate_hourly_efficiency(shift_range, scanned_fx, ref_range_times, num_operators):
+    shift_start_str, shift_end_str = shift_range.split("-")
+    shift_start_time = datetime.strptime(shift_start_str, "%H:%M").time()
+    shift_end_time = datetime.strptime(shift_end_str, "%H:%M").time()
+
+    if not scanned_fx:
+        # If no scanned_fx, return empty slots for current shift
+        now = datetime.now()
+        base_date = now.date()
+        shift_start = datetime.combine(base_date, shift_start_time)
+        shift_end = datetime.combine(base_date, shift_end_time)
+        if shift_end <= shift_start:
+            shift_end += timedelta(days=1)
+        slots = []
+        current = shift_start
+        while current < shift_end:
+            slots.append((current.strftime("%H:%M"), 0.0))
+            current += timedelta(hours=1)
+        return slots
+
+    # Use the date of the first scan as reference
+    first_scan_time = scanned_fx[0]["created_at"]
+    base_date = first_scan_time.date()
+    shift_start = datetime.combine(base_date, shift_start_time)
+    shift_end = datetime.combine(base_date, shift_end_time)
+    if shift_end <= shift_start:
+        shift_end += timedelta(days=1)
+
+    # Handle scans that occurred after midnight (e.g., 02:00 of next day)
+    for fx in scanned_fx:
+        if fx["created_at"] < shift_start:
+            # That means the scan was likely after midnight in a night shift
+            shift_start -= timedelta(days=1)
+            shift_end -= timedelta(days=1)
+            break
+
+    # Generate hourly slots
+    current = shift_start
+    hourly_slots = []
+    while current < shift_end:
+        hourly_slots.append(current)
+        current += timedelta(hours=1)
+
+    ref_time_map = dict(ref_range_times)
+    hourly_refs = {slot.strftime("%H:%M"): [] for slot in hourly_slots}
+
+    for item in scanned_fx:
+        scan_time = item["created_at"]
+        ref = item["reference"]
+
+        if ref not in ref_time_map:
+            continue  # Unknown reference
+
+        for slot in hourly_slots:
+            if slot <= scan_time < slot + timedelta(hours=1):
+                hour_key = slot.strftime("%H:%M")
+                hourly_refs[hour_key].append(ref)
+                break
+
+    hourly_efficiencies = []
+    for hour_str, refs in hourly_refs.items():
+        total_time = sum(ref_time_map[ref] for ref in refs)
+        efficiency = (total_time / num_operators) * 100 if num_operators else 0
+        hourly_efficiencies.append((hour_str, round(efficiency, 2)))
+
+    return hourly_efficiencies
+
+def build_ref_range_times(scanned_fx, ref_info_list):
+    # Extract unique references from scanned_fx
+    scanned_refs = {item["reference"] for item in scanned_fx}
+
+    # Create mapping from reference to range_time
+    ref_map = {}
+    for info in ref_info_list:
+        ref = info.get("ref")
+        range_time = info.get("cycle_time")
+        if ref in scanned_refs and ref not in ref_map:
+            ref_map[ref] = range_time  # Avoid duplicates
+
+    # Convert to list of tuples
+    return [(ref, ref_map[ref]) for ref in ref_map]
+
+def compute_total_efficiency(shift_range, scanned_fx, ref_range_times, num_operators):
+    """
+    scanned_fx: list of scanned reference strings, e.g. ['12345 07', '12345 07', ...]
+    ref_range_times: list of tuples -> [('12345 07', 2.6), ...]
+    shift_range_str: string format 'HH:MM-HH:MM', e.g. '14:00-22:00'
+    operators_count: int, number of present operators
+    """
+    # Parse shift start and end
+    try:
+        shift_start_str, shift_end_str = shift_range.strip().split('-')
+    except ValueError:
+        raise ValueError(f"Invalid shift_range format: {shift_range}, expected 'HH:MM-HH:MM'")
+
+    # Create a mapping: ref -> range_time
+    ref_range_dict = {ref: time for ref, time in ref_range_times}
+
+    # Count each reference in scanned_fx only if it's in ref_range_dict
+    ref_counts = {}
+    for fx in scanned_fx:
+        ref = fx.get("reference")  # or use the correct key name from your dicts
+        if ref in ref_range_dict:
+            ref_counts[ref] = ref_counts.get(ref, 0) + 1
+    print(f"ref_count : {ref_counts}")
+    # Compute numerator: sum(count * range_time) for each ref
+    total_work_done = sum(ref_counts[ref] * ref_range_dict[ref] for ref in ref_counts)
+
+    fmt = "%H:%M"
+    now = datetime.now()
+    current_time = datetime.strptime(now.strftime(fmt), fmt)
+    shift_start = datetime.strptime(shift_start_str, fmt)
+    shift_end = datetime.strptime(shift_end_str, fmt)
+
+    # Handle overnight shift (e.g., 22:00-06:00)
+    if shift_end <= shift_start:
+        shift_end += timedelta(days=1)
+        if current_time < shift_start:
+            current_time += timedelta(days=1)
+
+    if current_time < shift_start:
+        elapsed_hours = 0  # shift hasn't started yet
+    elif current_time > shift_end:
+        elapsed_hours = (shift_end - shift_start).seconds / 3600
+    else:
+        elapsed_hours = (current_time - shift_start).seconds / 3600
+
+    elapsed_hours = max(elapsed_hours, 1)  # avoid division by 0
+    print(f"Elapsed Hours: {elapsed_hours}")
+
+    # Compute efficiency
+    denominator = num_operators * elapsed_hours
+    if denominator == 0:
+        return 0.0
+
+    efficiency = (total_work_done / denominator) * 100
+    return round(efficiency, 2)

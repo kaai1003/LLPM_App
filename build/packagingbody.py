@@ -274,7 +274,7 @@ class PackagingBody(tk.Frame):
                     ref_validation = input[len(self.barcode_prefix):]
                     print(f"Box Reference Scanned: {self.box_ref}")
                     if ref_validation != self.current_galia.reference:
-                        messagebox.showerror("Error", f"Validation Reference {self.validation_ref} does not match opened Galia reference {self.current_galia.reference}.")
+                        messagebox.showerror("Error", f"Validation Reference {ref_validation} does not match opened Galia reference {self.current_galia.reference}.")
                         self.init_vars()
                         self.activebox_vars()
                         self.create_widgets()

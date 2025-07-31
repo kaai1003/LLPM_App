@@ -7,11 +7,15 @@ from models.engine.db_manager import set_db_conn
 from models.engine.db_manager import get_connection
 from models.engine.db_manager import get_scanned_harnesses_by_shift
 from models.engine.db_manager import get_scanned_fx_per_hour
+from models.engine.db_manager import get_all
 from models.engine.shift import get_current_shift
 from models.engine.shift import working_hours
 from models.engine.app_tools import get_line_id
 from models.engine.app_tools import get_dashboard_config
 from models.engine.app_tools import get_expected_fx
+from models.engine.app_tools import calculate_hourly_efficiency
+from models.engine.app_tools import build_ref_range_times
+from models.engine.app_tools import compute_total_efficiency
 from models.engine.packaging_manager import check_packaging_config
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -44,6 +48,7 @@ class ProductionDashboard(tk.Tk):
         self.scanned_fx = {}
         self.header1_labels = {}
         self.header2_labels = {}
+        self.scanned_ref = []
         # Simulated data
         self.load_data()
 
@@ -89,22 +94,39 @@ class ProductionDashboard(tk.Tk):
             if label in self.header2_labels:
                 self.header2_labels[label].config(text=str(value))
         # Refresh Charts
+        # effecience
+        x_labels = [hour for hour, _ in self.efficiency_per_hour]
+        y_values = [eff for _, eff in self.efficiency_per_hour]
         
+        
+        self.ax1.clear()
+        self.ax1.plot(x_labels, y_values, marker='o', label='Efficiency')
+        self.ax1.axhline(y=100, color='green', linestyle='--', label='Target: 100%')
+        self.ax1.set_title("Efficiency per Hour")
+        self.ax1.set_ylabel("Efficiency %")
+        self.ax1.set_xlabel("Time Slots")
+        self.ax1.set_xticks(range(len(x_labels)))
+        self.ax1.set_xticklabels(x_labels, rotation=45, ha='right')
+        self.ax1.legend()
+        self.canvas1.draw()
         # Output per hour
         self.th = self.production_config.get("target_per_hour", 0)
         labels = [t[0] for t in self.output_per_hour]
         values = [t[1] for t in self.output_per_hour]
 
         self.ax2.clear()
+        x_positions = list(range(len(labels)))
         self.ax2.bar(labels, values, color="orange")
-        self.ax2.axhline(y=20, color='green', linestyle='--', label=self.th)
+        self.ax2.axhline(y=self.th, color='green', linestyle='--', label=self.th)
         self.ax2.set_title("Output per Hour")
         self.ax2.set_ylabel("Qty")
         self.ax2.set_xlabel("Hour")
+        self.ax2.set_xticks(x_positions)
         self.ax2.set_xticklabels(labels, rotation=45, ha='right')
         self.ax2.legend()
         self.canvas2.draw()
-
+        
+        self.draw_efficiency_gauge()  # Draw initially
         print("🔁 Dashboard refreshed at", datetime.datetime.now())
 
         # Call this method again after 3000 milliseconds (3 seconds)
@@ -131,6 +153,9 @@ class ProductionDashboard(tk.Tk):
         except Exception as e:
             print(f"❌ Error: {e}")
         self.scanned_fx = get_scanned_harnesses_by_shift(self.shift_range)
+        all_refs = get_all("reference")
+        self.scanned_ref = build_ref_range_times(self.scanned_fx, all_refs)
+        print(self.scanned_ref)
         print(f"Scanned FX: {self.scanned_fx}")
         self.supervisor = self.production_config.get("team_speaker", "Unknown")
         self.project = line_details.get("project", "Unknown")
@@ -138,6 +163,7 @@ class ProductionDashboard(tk.Tk):
         self.line = line_details.get("line_id", "Unknown")
         self.ops = self.production_config.get("line_operators", 0)
         self.pops = self.production_config.get("present_operators", 0)
+        self.effecience = self.pops = self.production_config.get("effecience", 100)
         self.aop = self.ops - self.pops
         self.prod_infos = [
             ("Supervisor", self.supervisor, "#ff7514"),
@@ -153,11 +179,24 @@ class ProductionDashboard(tk.Tk):
 
         self.shift_target = self.production_config.get("shift_target", 0)
         self.expected = get_expected_fx(self.shift_range, self.shift_target)
+        print(f"expected FX : {self.expected}")
         self.delivered = len(self.scanned_fx) #harness Scanned Count
         self.gap = self.delivered - self.expected
-        self.efficiency_values = [60.62, 53.89, 80.68, 22.01, 26.94, 76.13, 0, 0, 0]
         self.output_per_hour = get_scanned_fx_per_hour(self.shift_range)
-        print(self.output_per_hour)
+        print(f"output per hour: {self.output_per_hour}")
+        # self.efficiency_values = [60.62, 53.89, 80.68, 22.01, 26.94, 76.13, 0, 0, 0]
+        self.efficiency_per_hour = calculate_hourly_efficiency(self.shift_range,
+                                                               self.scanned_fx,
+                                                               self.scanned_ref,
+                                                               self.pops
+                                                               )
+        print(f"effec hour: {self.efficiency_per_hour}")
+        self.total_eff = compute_total_efficiency(self.shift_range,
+                                                  self.scanned_fx,
+                                                  self.scanned_ref,
+                                                  self.pops
+                                                  )
+        print(f"total effecience : {self.total_eff}")
         
         self.info_prod = [
             ("Shift Target", self.shift_target, "#2196F3"),
@@ -196,20 +235,26 @@ class ProductionDashboard(tk.Tk):
         frame.pack(fill='both', expand=True, padx=10, pady=10)
 
         # Efficiency
+        
+        # Assuming self.efficiency_data is a list of tuples like [('14:00', 0.0), ('15:00', 50.0), ('16:00', 2210.0)]
+        x_labels = [hour for hour, _ in self.efficiency_per_hour]
+        y_values = [eff for _, eff in self.efficiency_per_hour]
+
         fig1 = Figure(figsize=(5, 3), dpi=100)
         self.ax1 = fig1.add_subplot(111)
-        self.ax1.plot(self.efficiency_values, marker='o', label='Efficiency')
-        self.ax1.axhline(y=100, color='green', linestyle='--', label='Target: 100%')
+        self.ax1.plot(x_labels, y_values, marker='o', label='Efficiency')
+        self.ax1.axhline(y=self.effecience, color='green', linestyle='--', label=f'Target: {self.effecience}%')
         self.ax1.set_title("Efficiency per Hour")
-        self.ax1.set_ylim([0, 140])
+        self.ax1.set_ylim([0, max(140, max(y_values) + 20)])  # Adjust Y limit dynamically
         self.ax1.set_ylabel("Efficiency %")
-        self.ax1.set_xlabel("Time slots")
+        self.ax1.set_xlabel("Time Slots")
+        self.ax1.set_xticks(range(len(x_labels)))
+        self.ax1.set_xticklabels(x_labels, rotation=45, ha='right')
         self.ax1.legend()
 
         self.canvas1 = FigureCanvasTkAgg(fig1, master=frame)
         self.canvas1.draw()
         self.canvas1.get_tk_widget().pack(side='left', fill='both', expand=True)
-
         # Output per hour
         labels = [t[0] for t in self.output_per_hour]
         values = [t[1] for t in self.output_per_hour]
@@ -217,12 +262,14 @@ class ProductionDashboard(tk.Tk):
 
         fig2 = Figure(figsize=(5, 3), dpi=100)
         self.ax2 = fig2.add_subplot(111)
-
+        
+        x_positions = list(range(len(labels)))
         self.ax2.bar(labels, values, color="orange")
         self.ax2.axhline(y=self.th, color='green', linestyle='--', label=self.th)
         self.ax2.set_title("Output per Hour")
         self.ax2.set_ylabel("Qty")
         self.ax2.set_xlabel("Hour")
+        self.ax2.set_xticks(x_positions)
         self.ax2.set_xticklabels(labels, rotation=45, ha='right')
         self.ax2.legend()
 
@@ -234,31 +281,33 @@ class ProductionDashboard(tk.Tk):
         frame = tk.Frame(self, bg="white")
         frame.pack(pady=20)
 
-        try:
-            eff_percent = (self.delivered / self.shift_target) * 100
-        except:
-            eff_percent = 0.0
-        
-        canvas = tk.Canvas(frame, width=250, height=150, bg='white', highlightthickness=0)
-        canvas.pack()
+        self.gauge_canvas = tk.Canvas(frame, width=250, height=150, bg='white', highlightthickness=0)
+        self.gauge_canvas.pack()
 
-        # Draw semicircle background
-        canvas.create_arc(10, 10, 240, 240, start=130, extent=50, outline='red', style='arc', width=25)
-        canvas.create_arc(10, 10, 240, 240, start=95, extent=40, outline='orange', style='arc', width=25)
-        canvas.create_arc(10, 10, 240, 240, start=50, extent=40, outline='yellow', style='arc', width=25)
-        canvas.create_arc(10, 10, 240, 240, start=0, extent=50, outline='green', style='arc', width=25)
+        self.draw_efficiency_gauge()  # Draw initially
 
-        # Draw needle
-        angle = 180 * (eff_percent / 100)
+    def draw_efficiency_gauge(self):
+        self.gauge_canvas.delete("all")  # Clear previous drawings
+
+        # Semicircle zones
+        self.gauge_canvas.create_arc(10, 10, 240, 240, start=130, extent=50, outline='red', style='arc', width=25)
+        self.gauge_canvas.create_arc(10, 10, 240, 240, start=95, extent=40, outline='orange', style='arc', width=25)
+        self.gauge_canvas.create_arc(10, 10, 240, 240, start=50, extent=40, outline='yellow', style='arc', width=25)
+        self.gauge_canvas.create_arc(10, 10, 240, 240, start=0, extent=50, outline='green', style='arc', width=25)
+
+        # Needle
+        angle = 180 * (self.total_eff / 100)
         radians = math.radians(180 - angle)
         x = 125 + 90 * math.cos(radians)
         y = 125 - 90 * math.sin(radians)
-        canvas.create_line(125, 125, x, y, fill='green', width=4)
+        self.gauge_canvas.create_line(125, 125, x, y, fill='green', width=4)
 
         # Center circle
-        canvas.create_oval(120, 120, 130, 130, fill='black')
+        self.gauge_canvas.create_oval(120, 120, 130, 130, fill='black')
 
-        canvas.create_text(125, 140, text=f"{eff_percent:.1f}%", font=("Arial", 16, "bold"), fill='black')
+        # Efficiency label
+        self.gauge_canvas.create_text(125, 140, text=f"{self.total_eff:.1f}%", font=("Arial", 16, "bold"), fill='black')
+
 
 
 
