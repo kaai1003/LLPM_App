@@ -1,0 +1,36 @@
+{"BOX": [
+    {
+        "barcode": "reference",
+        "prefix": "P",
+        "photo": "./app_images/SPA3/spa3_galia_ref.jpg"
+    },
+    {
+        "barcode": "nrgalia",
+        "prefix": "S",
+        "photo": "./app_images/SPA3/spa3_galia_nr.jpg"
+    },
+    {
+        "barcode": "quantity",
+        "prefix": "Q",
+        "photo": "./app_images/SPA3/spa3_galia_q.jpg"
+    },
+    {
+        "barcode": "box_type",
+        "prefix": "V",
+        "photo": "./app_images/SPA3/spa3_galia_q.jpg"
+    }
+],
+"FX": {"BOL": [
+        {"barcode": "reference",
+        "prefix": "",
+        "photo": "./app_images/SPA3/spa3_bol_s_ref.jpg"},
+        {"barcode": "compteur",
+        "prefix": "C",
+        "length": 5,
+        "photo": "./app_images/SPA3/spa3_bol_s_cpt.jpg"},
+        {"barcode": "box_type",
+        "prefix": "B",
+        "length": 5,
+        "photo": "./app_images/SPA3/spa3_bol_s_cpt.jpg"}
+    ]}
+}

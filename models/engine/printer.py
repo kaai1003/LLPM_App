@@ -4,10 +4,10 @@ import win32print
 import win32ui
 import os
 
-def generate_label(id, label, data):
+def godex_label(data):
     """generate label"""
     printer = 'Godex G500'
-    template_path = 'data/label/{}_template.txt'.format(label)
+    template_path = "./settings/label_template.txt"
     try:
         # Read the template
         with open(template_path, 'r') as template_file:
@@ -16,7 +16,7 @@ def generate_label(id, label, data):
         # Replace variables in the template
         if data:
             label_content = label_content.format(**data)
-            output_label = 'data/label/{}_{}.txt'.format(label, id)
+            output_label = './settings/{}.txt'.format(data["nr_galia"])
             # Save the modified label to a new file
             with open(output_label, 'w') as output_file:
                 output_file.write(label_content)
@@ -38,6 +38,10 @@ def generate_label(id, label, data):
                 win32print.ClosePrinter(printer_handle)
                 
                 print("File sent to the printer successfully.")
+                # ✅ Delete the file after successful print
+                if os.path.exists(output_label):
+                    os.remove(output_label)
+                    print(f"Deleted temporary file: {output_label}")
             except Exception as e:
                 print(f"Error: {e}")
     except Exception as e:

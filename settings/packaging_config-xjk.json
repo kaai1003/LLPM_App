@@ -1,0 +1,36 @@
+{"BOX": [
+    {
+        "barcode": "reference",
+        "prefix": "P",
+        "photo": "./app_images/XJK/xjk_galia_ref.jpg"
+    },
+    {
+        "barcode": "nrgalia",
+        "prefix": "S",
+        "photo": "./app_images/XJK/xjk_galia_nr.jpg"
+    },
+    {
+        "barcode": "quantity",
+        "prefix": "Q",
+        "photo": "./app_images/XJK/xjk_galia_q.jpg"
+    }
+],
+"FX": {"PTA": [
+        {"barcode": "reference",
+        "prefix": "A",
+        "photo": "./app_images/XJK/xjk_pta_ref.jpg"},
+        {"barcode": "compteur",
+        "prefix": "A",
+        "length": 5,
+        "photo": "./app_images/XJK/xjk_pta_cpt.jpg"}
+    ],
+    "BOL": [
+        {"barcode": "reference",
+        "prefix": "",
+        "photo": "./app_images/XJK/xjk_bol_ref.jpg"},
+        {"barcode": "compteur",
+        "prefix": "E",
+        "length": 5,
+        "photo": "./app_images/XJK/xjk_bol_cpt.jpg"}
+    ]}
+}

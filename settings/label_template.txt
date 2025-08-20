@@ -1,0 +1,25 @@
+^Q25,3
+^W55
+^H5
+^P1
+^S2
+^AD
+^C1
+^R0
+~Q+0
+^O0
+^D0
+^E12
+~R255
+^XSET,ROTATION,0
+^L
+Dy2-me-dd
+Th:m:s
+AC,66,7,1,1,0,0E,CONDITIONNMENT OK
+BA3,59,42,2,4,57,0,0,C{nr_galia}
+AB,160,103,1,1,0,0E,{nr_galia}
+AC,29,131,1,1,0,0E,REF : {ref}
+AA,334,120,1,1,0,0E,Qt : {qt}
+AA,334,141,1,1,0,0E,OP : {op}
+AA,97,169,1,1,0,0E,DATE : {date_time}
+E

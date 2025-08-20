@@ -17,6 +17,7 @@ from models.engine.packaging_manager import check_box_ref
 from models.engine.packaging_manager import check_cpt_hns
 from models.engine.packaging_manager import list_hns_labels
 from models.engine.printer import tsc_label
+from models.engine.printer import godex_label
 from PIL import Image, ImageTk
 
 class PackagingBody(tk.Frame):
@@ -445,7 +446,7 @@ class PackagingBody(tk.Frame):
         self.prod_frame1.grid(row=0, column=0, padx=0, sticky='nsew')
         self.prod_label = tk.Label(
             self.prod_frame1,
-            text="Production/Hour",
+            text="",
             font=("Arial", 20, "bold"),
             bg="white",
             fg="#0515F8"
@@ -453,7 +454,7 @@ class PackagingBody(tk.Frame):
         self.prod_label.grid(row=0, column=0, padx=10, pady=0, sticky='nsew')
         self.prod_label1 = tk.Label(
             self.prod_frame1,
-            text="06h00-07h00 ==> 12 FX",
+            text="",
             font=("Arial", 14, "bold"),
             bg="white",
             fg="black"
@@ -727,12 +728,20 @@ class PackagingBody(tk.Frame):
             print(f"Scanned Box: {self.current_galia.to_dict()}")
             ####Print the Box Label####
             ###########################
-            tsc_label(self.current_galia.nr_galia,
-                      self.current_galia.reference,
-                      self.current_galia.total_q,
-                      self.user_infos["usercard"],
-                      datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                      )
+            #####TSC PRINTER#####
+            #tsc_label(self.current_galia.nr_galia,
+            #          self.current_galia.reference,
+            #          self.current_galia.total_q,
+            #          self.user_infos["usercard"],
+            #          datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            #          )
+            ####GODEX PRINTER#####
+            godex_label({"nr_galia": self.current_galia.nr_galia,
+                         "ref": self.current_galia.reference,
+                         "qt": self.current_galia.total_q,
+                         "op": self.user_infos["usercard"],
+                         "date_time": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                         })
             self.init_vars()
             self.activebox_vars()
             self.create_widgets()
