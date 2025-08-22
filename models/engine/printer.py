@@ -4,10 +4,10 @@ import win32print
 import win32ui
 import os
 
-def godex_label(data):
+def godex_label(label,data):
     """generate label"""
     printer = 'Godex G500'
-    template_path = "./settings/label_template.txt"
+    template_path = f"./settings/{label}.txt"
     try:
         # Read the template
         with open(template_path, 'r') as template_file:

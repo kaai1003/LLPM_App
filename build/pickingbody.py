@@ -16,6 +16,8 @@ from models.engine.shift import get_current_shift
 from models.engine.job_manager import jobs_by_line
 from models.engine.app_tools import insert_harness_track
 from models.engine.app_tools import insert_harness_details
+from models.engine.printer import tsc_label
+from models.engine.printer import godex_label
 
 
 class PickingBody(tk.Frame):
@@ -91,6 +93,13 @@ class PickingBody(tk.Frame):
                 print(f"Picking Barcode: {self.picking_barcode}")
                 # print picking label
                 print(f"Picking scan: {input}")
+                godex_label("label_picking",
+                            {"ref": self.active_job["reference"],
+                             "op": self.user_infos["usercard"],
+                             "line_id": line_id,
+                             "date_time": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                             "cpt": self.picking_barcode,
+                             "l": len(self.picking_barcode)})
                 self.scan_status = 1
                 self.scan_msg = "Confirm picking Label Barcode"
                 self.scan_pic = "./app_images/label.png"

@@ -1,0 +1,25 @@
+^Q25,3
+^W45
+^H5
+^P1
+^S2
+^AD
+^C1
+^R0
+~Q+0
+^O0
+^D0
+^E12
+~R255
+^XSET,ROTATION,0
+^L
+Dy2-me-dd
+Th:m:s
+AD,123,10,1,1,0,0E,Picking
+AA,32,94,1,1,0,0E,OP: {op}
+AB,26,59,1,1,0,0E,REF: {ref}
+AA,32,119,1,1,0,0E,Line: {line_id}
+AA,32,145,1,1,0,0E,Date/Time: {date_time}
+W229,69,5,2,Q,8,4,{l},0
+{cpt}
+E
