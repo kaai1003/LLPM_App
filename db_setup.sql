@@ -61,6 +61,7 @@ CREATE TABLE production_jobs (
     remain INT DEFAULT 0,
     job_status VARCHAR NOT NULL,
     job_order INT NOT NULL,
+    usercard VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -73,6 +74,7 @@ CREATE TABLE harness_details (
     process VARCHAR NOT NULL,
     test_result VARCHAR NOT NULL,
     process_time FLOAT DEFAULT 0.0,
+    usercard VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -84,6 +86,7 @@ CREATE TABLE harness_tracker (
     line_id VARCHAR NOT NULL,
     process VARCHAR NOT NULL,
     harness_status VARCHAR NOT NULL,
+    usercard VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -97,6 +100,21 @@ CREATE TABLE galia (
     remain_q INT DEFAULT 0,
     scanned_q INT DEFAULT 0,
     status VARCHAR NOT NULL,
+    usercard VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE picking (
+    id VARCHAR PRIMARY KEY,
+    batch_id VARCHAR NOT NULL,
+    reference VARCHAR NOT NULL,
+    line_id VARCHAR NOT NULL,
+    total_q INT DEFAULT 0,
+    remain_q INT DEFAULT 0,
+    scanned_q INT DEFAULT 0,
+    status VARCHAR NOT NULL,
+    usercard VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -106,6 +124,7 @@ CREATE TABLE scanned_fx (
     reference VARCHAR NOT NULL,
     counter VARCHAR NOT NULL,
     id_galia VARCHAR NOT NULL,
+    usercard VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_galia) REFERENCES galia (id) ON DELETE CASCADE

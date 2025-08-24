@@ -20,6 +20,7 @@ tables = {"User": "users",
           "Harness": "harness_details",
           "Tracker": "harness_tracker",
           "Galia": "galia",
+          "Picking": "picking",
           "Scanned": "scanned_fx",
           "Log": "logs"
           }

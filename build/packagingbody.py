@@ -736,7 +736,8 @@ class PackagingBody(tk.Frame):
             #          datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             #          )
             ####GODEX PRINTER#####
-            godex_label({"nr_galia": self.current_galia.nr_galia,
+            godex_label("label_packaging",
+                        {"nr_galia": self.current_galia.nr_galia,
                          "ref": self.current_galia.reference,
                          "qt": self.current_galia.total_q,
                          "op": self.user_infos["usercard"],

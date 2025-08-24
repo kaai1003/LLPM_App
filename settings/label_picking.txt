@@ -1,5 +1,5 @@
 ^Q25,3
-^W45
+^W55
 ^H5
 ^P1
 ^S2
@@ -15,11 +15,13 @@
 ^L
 Dy2-me-dd
 Th:m:s
-AD,123,10,1,1,0,0E,Picking
-AA,32,94,1,1,0,0E,OP: {op}
-AB,26,59,1,1,0,0E,REF: {ref}
-AA,32,119,1,1,0,0E,Line: {line_id}
-AA,32,145,1,1,0,0E,Date/Time: {date_time}
-W229,69,5,2,Q,8,4,{l},0
-{cpt}
+Dy2-me-dd
+Th:m:s
+AC,130,5,1,1,0,0,Picking Label
+AA,317,80,1,1,0,0,OP: {op}
+AB,7,85,1,1,0,0,REF: {ref}
+AA,316,102,1,1,0,0,Line: {line_id}
+AA,23,169,1,1,0,0,Date/Time: {date_time}
+BA3,125,122,1,4,34,0,0,K{cpt}
+BA,89,39,1,4,35,0,0,K{ref}
 E

@@ -39,10 +39,11 @@ class ProductionPlannerApp(tk.Tk):
         #Settings(self)
 
 class PickingApp(tk.Tk):
-    def __init__(self, app_type, user_infos):
+    def __init__(self, app_type, user_infos, picking_type):
         super().__init__()
         self.app_type = app_type
         self.user_infos = user_infos
+        self.picking_type = picking_type
         self.title("Picking App")
         self.geometry("1920x1080")
         self.configure(bg="white")
@@ -53,7 +54,7 @@ class PickingApp(tk.Tk):
         Sidebar(self, self.user_infos)
         #Prodbar(self)
         #Activeref(self)
-        PickingBody(self, self.user_infos)
+        PickingBody(self, self.user_infos, self.picking_type)
 
 class PackagingApp(tk.Tk):
     def __init__(self, app_type, user_infos):
@@ -85,7 +86,11 @@ def launch_main_app(user_infos):
     if app_type == "orders_manager":
         app = ProductionPlannerApp(app_type, user_infos)
     elif app_type == "picking":
-        app = PickingApp(app_type, user_infos)
+        try:
+            picking_type = app_config["AppSettings"]["picking_type"]
+        except:
+            picking_type = "local"
+        app = PickingApp(app_type, user_infos, picking_type)
     elif app_type == "packaging":
         app = PackagingApp(app_type, user_infos)
     
