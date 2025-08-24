@@ -20,6 +20,7 @@ from models.engine.app_tools import get_line_conn
 class PlannerBody(tk.Frame):
     def __init__(self, parent, user_infos):
         self.user_infos = user_infos
+        self.usercard = self.user_infos["usercard"]
         super().__init__(parent, bg="white")
         self.pack(fill="both", expand=True)
         self.new_icon = ImageTk.PhotoImage(Image.open("./icons/new.png").resize((24, 24), Image.Resampling.LANCZOS))
@@ -42,7 +43,7 @@ class PlannerBody(tk.Frame):
         self.toolbar.grid(row=0, column=0, sticky="ew")
         #self.toolbar.columnconfigure((0, 1, 2, 3), weight=1)
         def submit(line_id, ref, qt, order):
-            new_job = create_job(ref, line_id, qt, order)
+            new_job = create_job(ref, line_id, qt, order, self.usercard)
             if new_job is None:
                 tk.Label(self.popup, text="Error creating job. Please try again.", fg="red").pack(pady=10)
                 return
@@ -93,6 +94,7 @@ class PlannerBody(tk.Frame):
                 return
             print(current_job)
             print(type(current_job))
+            current_job["usercard"] = self.usercard
             update_job(job_id, current_job)
             tk.Label(self.popup, text="Job Updated Succcefully!!!", fg="green").grid(row=7, columnspan=2, pady=10)
             return

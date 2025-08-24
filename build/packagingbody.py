@@ -178,6 +178,7 @@ class PackagingBody(tk.Frame):
                             self.text_entry.delete(0, tk.END)
                             return
                         self.text_entry.delete(0, tk.END)
+                        self.current_galia.usercard = self.user_infos["usercard"]
                         self.current_galia.update()
                         self.next_step()
                         return
@@ -620,6 +621,7 @@ class PackagingBody(tk.Frame):
                 self.activebox_vars()
                 self.create_widgets()
                 return
+            self.current_galia.usercard = self.user_infos["usercard"]
             self.current_galia.save()
             print(f"---New Galia {self.current_galia.nr_galia} Created---")
             print("-----------Box Scan Completed-------------")
@@ -690,8 +692,10 @@ class PackagingBody(tk.Frame):
                     self.create_widgets()
                     return
                 else:
+                    self.scanned_fx.usercard = self.user_infos["usercard"]
                     self.scanned_fx.save()
                     print(f"FX Scanned: {self.scanned_fx.to_dict()}")
+                    self.current_galia.usercard = self.user_infos["usercard"]
                     self.current_galia.update()
                     print(f"Scanned FX: {self.current_galia.scanned_q} / {self.current_galia.total_q}")
                     self.scan_step = "FX"
@@ -720,9 +724,11 @@ class PackagingBody(tk.Frame):
                 self.create_widgets()
                 return
             # print Box Label Completion
+            self.scanned_fx.usercard = self.user_infos["usercard"]
             self.scanned_fx.save()
             print(f"FX Scanned: {self.scanned_fx.to_dict()}")
             self.current_galia.status = "closed"
+            self.current_galia.usercard = self.user_infos["usercard"]
             self.current_galia.update()
             print(f"Scanned FX: {self.current_galia.nr_galia} is Closed")
             print(f"Scanned Box: {self.current_galia.to_dict()}")

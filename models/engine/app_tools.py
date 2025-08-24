@@ -76,25 +76,29 @@ def get_line_details(line_id):
         return line_details
     return None
     
-def insert_harness_track(refrence, cpt, line_id, process, status):
+def insert_harness_track(refrence, cpt, line_id, process, status, batch_id, usercard):
     """Insert Harness Track"""
     harness_track = {'reference': refrence,
                          'compteur': cpt,
                          'line_id': line_id,
                          'process': process,
                          'harness_status': status,
+                         'batch_id': batch_id,
+                         'usercard': usercard
                          }
     Tracker(**harness_track).save()
     print(f"Harness Track {refrence} Inserted with Compteur {cpt}")
     return True
 
-def insert_harness_details(refrence, cpt, line_id, process, result):
+def insert_harness_details(refrence, cpt, line_id, process, result, batch_id, usercard):
     """Insert Harness Track"""
     harness_details = {'reference': refrence,
                          'compteur': cpt,
                          'line_id': line_id,
                          'process': process,
                          'test_result': result,
+                         'batch_id': batch_id,
+                         'usercard': usercard
                          }
     Harness(**harness_details).save()
     print(f"Harness Track {refrence} Inserted with Compteur {cpt}")

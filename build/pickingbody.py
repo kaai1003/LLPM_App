@@ -106,7 +106,7 @@ class PickingBody(tk.Frame):
                             self.text_entry.delete(0, tk.END)
                             return
                     self.text_entry.delete(0, tk.END)
-                    self.cpt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                    self.cpt = next_id(self.counter_length)
                     self.picking_barcode = self.cpt + self.active_job["reference"]
                     print(f"Picking Barcode: {self.picking_barcode}")
                     # print picking label
@@ -129,17 +129,36 @@ class PickingBody(tk.Frame):
                         return
                     self.text_entry.delete(0, tk.END)
                     self.active_job["picked"] += 1
+                    self.current_batch.scanned_q += 1
                     self.active_job["remain"] -= 1
+                    self.current_batch.remain_q -= 1
+                    self.active_job["usercard"] = self.user_infos["usercard"]
+                    self.current_batch.usercard = self.user_infos["usercard"]
                     if self.active_job["remain"] == 0:
                         self.active_job["job_status"] = "closed"
+                        self.current_batch.status = "closed"
                         self.active_job["job_order"] = 0
+                        self.current_batch.update()
                         Job(**self.active_job).update()
                         update_orders(line_id)
                     else:
+                        self.current_batch.update()
                         Job(**self.active_job).update()
                     print(f"Harness From Ref : {self.active_job['reference']} is Picked")
-                    insert_harness_track(self.active_job["reference"], self.cpt, line_id, 'Picking', 'OK')
-                    insert_harness_details(self.active_job["reference"], self.cpt, line_id, 'Picking', 'OK')
+                    insert_harness_track(self.active_job["reference"],
+                                         self.cpt,
+                                         line_id,
+                                         'Picking',
+                                         'OK',
+                                         self.active_job["id"],
+                                         self.active_job["usercard"])
+                    insert_harness_details(self.active_job["reference"],
+                                           self.cpt,
+                                           line_id,
+                                           'Picking',
+                                           'OK',
+                                           self.active_job["id"],
+                                           self.active_job["usercard"])
                     self.scan_status = 0
                     self.create_widgets() # Refresh the UI
                 return
@@ -153,7 +172,7 @@ class PickingBody(tk.Frame):
                     if not self.ref_obj:
                         messagebox.showerror("Error", f"Reference {self.batch_ref} not found in database.")
                         self.text_entry.delete(0, tk.END)
-                        self.init_local_scan()
+                        self.init_vars()
                         self.create_widgets() # Refresh the UI
                         return
                     self.opened_batch = get_obj("picking", "reference", self.batch_ref)
@@ -172,7 +191,7 @@ class PickingBody(tk.Frame):
                         if self.opened_batch.get("batch_id", "N/A") != self.nr_batch:
                             messagebox.showerror("Error", f"Reference {self.active_ref} is already opened for another Batch_id.")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets()
                             return
                     else:
@@ -197,13 +216,13 @@ class PickingBody(tk.Frame):
                         elif self.opened_batch.get("status", "N/A") == "closed":
                             messagebox.showerror("Error", f"Galia {self.nr_batch} is already closed.")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets() # Refresh the UI
                             return
                         elif self.opened_batch.get("reference", "N/A") != self.active_ref:
                             messagebox.showerror("Error", f"Galia {self.nr_batch} reference mismatch.")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets()
                             return
                     self.current_batch = Picking(**self.opened_batch)
@@ -224,18 +243,19 @@ class PickingBody(tk.Frame):
                     except ValueError:
                         messagebox.showerror("Error", f"Invalid Quantity: {input}")
                         self.text_entry.delete(0, tk.END)
-                        self.init_local_scan()
+                        self.init_vars()
                         self.create_widgets()
                         return
                     if self.new_batch is False:
                         if self.current_batch.total_q != quantity:
                             messagebox.showerror("Error", f"Quantity mismatch for Galia {self.nr_batch}. Expected {self.current_batch.total_q}, got {quantity}.")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets()
                             return
                     else:
                         self.current_batch.total_q = quantity
+                        self.current_batch.usercard = self.user_infos["usercard"]
                         self.current_batch.save()
                     self.active_qt = self.current_batch.total_q
                     self.text_entry.delete(0, tk.END)
@@ -248,14 +268,14 @@ class PickingBody(tk.Frame):
                         if input != self.ref_obj.get("fuse_box", "N/A"):
                             messagebox.showerror("Error", f"Invalid Fusebox Barcode: {input}")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets()
                             return
                     else:
                         if input != "OK":
                             messagebox.showerror("Error", f"Invalid OK Barcode: {input}")
                             self.text_entry.delete(0, tk.END)
-                            self.init_local_scan()
+                            self.init_vars()
                             self.create_widgets()
                             return
                     self.cpt = next_id(self.counter_length)
@@ -263,7 +283,7 @@ class PickingBody(tk.Frame):
                     self.scan_status = 4
                     self.scan_msg = "Confirm Picking Label"
                     self.scan_pic = "./app_images/picking/label.png"    
-                    #self.current_batch.usercard = self.user_infos["usercard"]
+                    self.current_batch.usercard = self.user_infos["usercard"]
                     print(f"Galia Nr: {self.current_batch.batch_id} for Ref: {self.current_batch.reference} with Quantity: {self.current_batch.total_q} is Created")
                     self.scan_msg = "Confirm Picking Label"
                     self.scan_pic = "./app_images/picking/picking_label.png"
@@ -281,19 +301,34 @@ class PickingBody(tk.Frame):
                     if input[1:] != self.current_batch.reference:
                         messagebox.showerror("Error", f"Invalid Pickng Label Barcode: {input}")
                         self.text_entry.delete(0, tk.END)
-                        self.init_local_scan()
+                        self.init_vars()
                         self.create_widgets()
                         return
                     self.current_batch.scanned_q += 1
                     self.current_batch.remain_q = self.current_batch.total_q - self.current_batch.scanned_q
                     self.active_picked = self.current_batch.scanned_q
                     self.active_remain = self.current_batch.remain_q
+                    self.current_batch.usercard = self.user_infos["usercard"]
                     print(f"Harness From Galia Nr : {self.current_batch.batch_id} is Picked")
+                    insert_harness_track(self.current_batch.reference,
+                                         self.cpt,
+                                         line_id,
+                                         'Picking',
+                                         'OK',
+                                         self.current_batch.batch_id,
+                                         self.current_batch.usercard)
+                    insert_harness_details(self.current_batch.reference,
+                                           self.cpt,
+                                           line_id,
+                                           'Picking',
+                                           'OK',
+                                           self.current_batch.batch_id,
+                                           self.current_batch.usercard)
                     if self.current_batch.remain_q == 0:
                         self.current_batch.status = "closed"
                         self.current_batch.update()
                         self.text_entry.delete(0, tk.END)
-                        self.init_local_scan()
+                        self.init_vars()
                         self.create_widgets()
                         return
                     self.current_batch.update()
@@ -343,6 +378,21 @@ class PickingBody(tk.Frame):
             for job in self.jobs:
                 if job.get("job_order") == 1:
                     self.active_job = job
+                    self.current_hns = get_obj("picking", "batch_id", job.get("id", ""))
+                    if not self.current_hns:
+                        self.current_hns = {}
+                        self.current_hns["batch_id"] = job["id"]
+                        self.current_hns["reference"] = job["reference"]
+                        self.current_hns["line_id"] = job["line_id"]
+                        self.current_hns["status"] = "open"
+                        self.current_hns["total_q"] = job["quantity"]
+                        self.current_hns["scanned_q"] = job["picked"]
+                        self.current_hns["remain_q"] = job["remain"]
+                        self.current_hns["usercard"] = self.user_infos["usercard"]
+                        self.current_batch = Picking(**self.current_hns)
+                        self.current_batch.save()
+                    else:
+                        self.current_batch = Picking(**self.current_hns)
                     break
             self.active_ref = self.active_job.get("reference", "N/A")
             self.active_qt = self.active_job.get("quantity", 0)
@@ -479,17 +529,26 @@ class PickingBody(tk.Frame):
                     job.get("job_order", "N/A")
                 ))
 
-    def init_local_scan(self):
+    def init_vars(self):
+        self.jobs = []
+        self.opened_batch = None
+        self.ref_obj = None
         self.new_batch = False
         self.current_batch = None
         self.nr_batch = None
-        self.scan_status = 0
-        self.scan_msg = "Scan Reference Galia Barcode"
-        self.scan_pic = "./app_images/picking/galia_ref.jpeg"
+        self.batch_ref = None
         self.active_ref = "-------"
         self.active_qt = 0
         self.active_picked = 0
         self.active_remain = 0
+        self.scan_status = 0
+        self.scan_msg = ""
+        self.scan_pic = ""
+        self.fusebox = None
+        self.cpt = ""
+        self.picking_barcode = None
+        self.active_job = {}
+        self.current_hns = {}
         return
 
     def fusebox_vars(self):

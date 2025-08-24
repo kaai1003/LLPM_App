@@ -19,7 +19,7 @@ def check_job(ref, line_id):
             return False
     return False
     
-def create_job(ref, line_id, qt, order):
+def create_job(ref, line_id, qt, order, usercard):
     line_conn = get_line_conn(line_id)
     if line_conn is None:
         print(f"Line {line_id} does not exist.")
@@ -43,6 +43,7 @@ def create_job(ref, line_id, qt, order):
     new_job["remain"] = qt
     new_job["job_order"] = int(order)
     new_job["job_status"] = "pending"
+    new_job["usercard"] = usercard
     return Job(**new_job).save()
 
 def update_job(job_id, data):

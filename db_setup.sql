@@ -1,4 +1,4 @@
--- Active: 1736716074336@@127.0.0.1@5432@line_prod_db
+-- Active: 1736716074336@@127.0.0.1@5432@xjk_db
 
 CREATE TABLE users (
     id VARCHAR PRIMARY KEY,
@@ -68,6 +68,7 @@ CREATE TABLE production_jobs (
 
 CREATE TABLE harness_details (
     id VARCHAR PRIMARY KEY,
+    batch_id VARCHAR NOT NULL,
     reference VARCHAR NOT NULL,
     compteur VARCHAR NOT NULL,
     line_id VARCHAR NOT NULL,
@@ -81,6 +82,7 @@ CREATE TABLE harness_details (
 
 CREATE TABLE harness_tracker (
     id VARCHAR PRIMARY KEY,
+    batch_id VARCHAR NOT NULL,
     reference VARCHAR NOT NULL,
     compteur VARCHAR NOT NULL UNIQUE,
     line_id VARCHAR NOT NULL,

@@ -2,35 +2,35 @@
     {
         "barcode": "reference",
         "prefix": "P",
-        "photo": "./app_images/XJK/xjk_galia_ref.jpg"
+        "photo": "./app_images/P2JO/glia_ref.jpg"
     },
     {
         "barcode": "nrgalia",
         "prefix": "S",
-        "photo": "./app_images/XJK/xjk_galia_nr.jpg"
+        "photo": "./app_images/P2JO/glia_part_number.jpg"
     },
     {
         "barcode": "quantity",
         "prefix": "Q",
-        "photo": "./app_images/XJK/xjk_galia_q.jpg"
+        "photo": "./app_images/P2JO/glia_quantity.jpg"
     }
 ],
 "FX": {"PTA": [
         {"barcode": "reference",
-        "prefix": "A",
-        "photo": "./app_images/XJK/xjk_pta_ref.jpg"},
+        "prefix": "R",
+        "photo": "./app_images/P2JO/P2JO_PTA.jpg"},
         {"barcode": "compteur",
-        "prefix": "A",
+        "prefix": "C",
         "length": 5,
-        "photo": "./app_images/XJK/xjk_pta_cpt.jpg"}
+        "photo": "./app_images/P2JO/P2JO_PTA_COUNTER.jpg"}
     ],
     "BOL": [
         {"barcode": "reference",
         "prefix": "",
-        "photo": "./app_images/XJK/xjk_bol_ref.jpg"},
+        "photo": "./app_images/P2JO/BOL_ref.jpg"},
         {"barcode": "compteur",
-        "prefix": "E",
+        "prefix": "P",
         "length": 5,
-        "photo": "./app_images/XJK/xjk_bol_cpt.jpg"}
+        "photo": "./app_images/P2JO/BOL1_COUNTER.jpg"}
     ]}
 }
