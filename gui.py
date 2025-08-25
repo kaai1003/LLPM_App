@@ -32,11 +32,24 @@ class ProductionPlannerApp(tk.Tk):
 
     def create_layout(self):
         Header(self, self.app_type, self.user_infos)
-        Sidebar(self, self.user_infos)
-        #Toolbar(self)
-        PlannerBody(self, self.user_infos)
-        #FilterBar(self, plannerbody)
-        #Settings(self)
+        Sidebar(self, self.user_infos, self.show_body)
+        # body frame
+        self.body_frame = tk.Frame(self, bg="white")
+        self.body_frame.pack(side="right", fill=tk.BOTH, expand=True)
+        
+        self.show_body("home")
+
+    def show_body(self, section):
+        for widget in self.body_frame.winfo_children():
+            widget.destroy()
+        if section == "home":
+            PlannerBody(self.body_frame, self.user_infos)
+        elif section == "data":
+            tk.Label(self.body_frame, text="DATA FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "edit":
+            tk.Label(self.body_frame, text="EDIT FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "settings":
+            Settings(self.body_frame)
 
 class PickingApp(tk.Tk):
     def __init__(self, app_type, user_infos, picking_type):
@@ -51,10 +64,23 @@ class PickingApp(tk.Tk):
 
     def create_layout(self):
         Header(self, self.app_type, self.user_infos)
-        Sidebar(self, self.user_infos)
-        #Prodbar(self)
-        #Activeref(self)
-        PickingBody(self, self.user_infos, self.picking_type)
+        Sidebar(self, self.user_infos, self.show_body)
+        # body frame
+        self.body_frame = tk.Frame(self, bg="white")
+        self.body_frame.pack(side="right", fill=tk.BOTH, expand=True)
+        self.show_body("home")
+
+    def show_body(self, section):
+        for widget in self.body_frame.winfo_children():
+            widget.destroy()
+        if section == "home":
+            PickingBody(self.body_frame, self.user_infos, self.picking_type)
+        elif section == "data":
+            tk.Label(self.body_frame, text="DATA FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "edit":
+            tk.Label(self.body_frame, text="EDIT FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "settings":
+            Settings(self.body_frame)
 
 class PackagingApp(tk.Tk):
     def __init__(self, app_type, user_infos):
@@ -68,10 +94,23 @@ class PackagingApp(tk.Tk):
 
     def create_layout(self):
         Header(self, self.app_type, self.user_infos)
-        Sidebar(self, self.user_infos)
-        #Prodbar(self)
-        #Activebox(self)
-        PackagingBody(self, self.user_infos)
+        Sidebar(self, self.user_infos, self.show_body)
+        # body frame
+        self.body_frame = tk.Frame(self, bg="white")
+        self.body_frame.pack(side="right", fill=tk.BOTH, expand=True)
+        self.show_body("home")
+
+    def show_body(self, section):
+        for widget in self.body_frame.winfo_children():
+            widget.destroy()
+        if section == "home":
+            PackagingBody(self.body_frame, self.user_infos)
+        elif section == "data":
+            tk.Label(self.body_frame, text="DATA FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "edit":
+            tk.Label(self.body_frame, text="EDIT FRAME", font=("Arial", 20)).pack(expand=True)
+        elif section == "settings":
+            Settings(self.body_frame)
 
 def launch_main_app(user_infos):
     print(f"Logged in as: {user_infos}")

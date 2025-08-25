@@ -7,8 +7,9 @@ from functools import partial
 from models.engine.app_tools import set_dashboard_config
 
 class Sidebar(tk.Frame):
-    def __init__(self, parent, user_infos):
+    def __init__(self, parent, user_infos, callback):
         super().__init__(parent, bg="#002147", width=120)
+        self.callback = callback
         self.user_infos = user_infos
         self.pack(side="left", fill="y")
         self.create_widgets()
@@ -165,19 +166,19 @@ class Sidebar(tk.Frame):
 
         # Text button
         home_btn = tk.Button(self, text="  Home", bg="#0a2740", fg="#f57c00",
-                        font=("Arial", 14, "bold"), relief="flat", command=command("home"),
+                        font=("Arial", 14, "bold"), relief="flat", command=lambda: self.callback("home"),
                         activebackground="#10385c", activeforeground="#ffa726", image=self.home_icon, compound="left", anchor="w")
         home_btn.pack(side="top", fill="x", pady=(10, 0))
         data_btn = tk.Button(self, text="  Data", bg="#0a2740", fg="#f57c00",
-                        font=("Arial", 14, "bold"), relief="flat", command=command("edit"),
+                        font=("Arial", 14, "bold"), relief="flat", command=lambda: self.callback("data"),
                         activebackground="#10385c", activeforeground="#ffa726", image=self.data_icon, compound="left", anchor="w")
         data_btn.pack(side="top", fill="x", pady=(10, 0))
         edit_btn = tk.Button(self, text="  Edit", bg="#0a2740", fg="#f57c00",
-                        font=("Arial", 14, "bold"), relief="flat", command=command("edit"),
+                        font=("Arial", 14, "bold"), relief="flat", command=lambda: self.callback("edit"),
                         activebackground="#10385c", activeforeground="#ffa726", image=self.edit_icon, compound="left", anchor="w")
         edit_btn.pack(side="top", fill="x", pady=(10, 0))
         settings_btn = tk.Button(self, text="  Settings", bg="#0a2740", fg="#f57c00",
-                        font=("Arial", 14, "bold"), relief="flat", command=command("settings"),
+                        font=("Arial", 14, "bold"), relief="flat", command=lambda: self.callback("settings"),
                         activebackground="#10385c", activeforeground="#ffa726", image=self.settings_icon, compound="left", anchor="w")
         settings_btn.pack(side="top", fill="x", pady=(10, 0))
         dashboard_btn = tk.Button(self, text="  Dashboard", bg="#0a2740", fg="#f57c00",

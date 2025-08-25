@@ -79,6 +79,8 @@ class LoginApp(tk.Tk):
                               width=20, height=2, bd=0, relief="flat", cursor="hand2",
                               activebackground="#1c86ee", command=self.login)
         login_btn.pack(pady=(20, 10))
+        
+        self.bind('<Return>', lambda event: self.login())
 
 
     def create_input_field(self, label_text, icon_text, show=None):
@@ -99,6 +101,7 @@ class LoginApp(tk.Tk):
 
         if label_text == "Usercard":
             self.username_entry = entry
+            self.username_entry.focus()
         elif label_text == "Password":
             self.password_entry = entry
 
