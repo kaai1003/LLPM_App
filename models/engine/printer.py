@@ -16,7 +16,7 @@ def godex_label(label,data):
         # Replace variables in the template
         if data:
             label_content = label_content.format(**data)
-            output_label = './settings/{}.txt'.format(data["nr_galia"])
+            output_label = './settings/{}.txt'.format(label + '_output')
             # Save the modified label to a new file
             with open(output_label, 'w') as output_file:
                 output_file.write(label_content)

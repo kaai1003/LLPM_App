@@ -1,4 +1,5 @@
 import tkinter as tk
+import uuid
 from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -334,6 +335,140 @@ class PickingBody(tk.Frame):
                     self.current_batch.update()
                     self.fusebox_vars()
                     self.scan_status = 3
+                    self.create_widgets()
+                    return
+            elif self.picking_type == "basic":
+                if self.scan_status == 0:
+                    # scan galia reference
+                    self.batch_ref = input[1:]
+                    self.ref_obj = get_obj("reference", "ref", self.batch_ref)
+                    print(f"Scanned Reference: {self.batch_ref}")
+                    print(f"found Reference: {self.ref_obj}")
+                    if not self.ref_obj:
+                        messagebox.showerror("Error", f"Reference {self.batch_ref} not found in database.")
+                        self.text_entry.delete(0, tk.END)
+                        self.init_vars()
+                        self.create_widgets() # Refresh the UI
+                        return
+                    self.text_entry.delete(0, tk.END)
+                    self.active_ref = self.ref_obj.get("ref", "N/A")
+                    self.fusebox = check_fusebox(self.active_ref)
+                    self.opened_batch = get_obj("picking", "reference", self.batch_ref)
+                    if self.opened_batch and self.opened_batch.get("status", "N/A") == "open":
+                        self.current_batch = Picking(**self.opened_batch)
+                        self.active_qt = self.current_batch.total_q
+                        self.active_picked = self.current_batch.scanned_q
+                        self.active_remain = self.current_batch.remain_q
+                        self.scan_status = 2
+                        self.fusebox_vars()
+                        self.create_widgets() # Refresh the UI
+                        return
+                    #create a new batch
+                    self.current_batch = Picking()
+                    self.current_batch.batch_id = uuid.uuid4().hex[:9].upper()
+                    self.current_batch.reference = self.active_ref
+                    self.current_batch.line_id = line_id
+                    self.current_batch.status = "open"
+                    self.current_batch.total_q = 0
+                    self.current_batch.scanned_q = 0
+                    self.current_batch.remain_q = 0
+                    self.current_batch.usercard = self.user_infos["usercard"]
+                    self.scan_msg = "Scan Galia Quantity Barcode"
+                    self.scan_pic = "./app_images/picking/galia_q.jpg"
+                    self.scan_status = 1
+                    self.create_widgets() # Refresh the UI
+                    return
+                elif self.scan_status == 1:
+                    try:
+                        quantity = int(input[1:])
+                        if quantity <= 0:
+                            raise ValueError("Quantity must be positive.")
+                    except ValueError:
+                        messagebox.showerror("Error", f"Invalid Quantity: {input}")
+                        self.text_entry.delete(0, tk.END)
+                        self.init_vars()
+                        self.create_widgets()
+                        return
+                    self.current_batch.total_q = quantity
+                    self.current_batch.usercard = self.user_infos["usercard"]
+                    self.current_batch.save()
+                    self.active_qt = self.current_batch.total_q
+                    self.text_entry.delete(0, tk.END)
+                    self.fusebox_vars()
+                    self.scan_status = 2
+                    self.create_widgets()
+                    return   
+                elif self.scan_status == 2:
+                    if self.fusebox:
+                        if input != self.ref_obj.get("fuse_box", "N/A"):
+                            messagebox.showerror("Error", f"Invalid Fusebox Barcode: {input}")
+                            self.text_entry.delete(0, tk.END)
+                            self.init_vars()
+                            self.create_widgets()
+                            return
+                    else:
+                        if input != "OK":
+                            messagebox.showerror("Error", f"Invalid OK Barcode: {input}")
+                            self.text_entry.delete(0, tk.END)
+                            self.init_vars()
+                            self.create_widgets()
+                            return
+                    self.cpt = next_id(self.counter_length)
+                    print(f"New Harness Counter: {self.cpt}")
+                    self.scan_status = 3
+                    self.scan_msg = "Confirm Picking Label"
+                    self.scan_pic = "./app_images/picking/label.png"    
+                    self.current_batch.usercard = self.user_infos["usercard"]
+                    print(f"Galia Nr: {self.current_batch.batch_id} for Ref: {self.current_batch.reference} with Quantity: {self.current_batch.total_q} is Created")
+                    self.scan_msg = "Confirm Picking Label"
+                    self.scan_pic = "./app_images/picking/picking_label.png"
+                    # print galia label
+                    godex_label("label_picking",
+                                {"ref": self.current_batch.reference,
+                                "op": self.user_infos["usercard"],
+                                "line_id": line_id,
+                                "date_time": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                                "cpt": self.current_batch.batch_id})
+                    self.text_entry.delete(0, tk.END)
+                    self.create_widgets()
+                    return
+                elif self.scan_status == 3:
+                    if input[1:] != self.current_batch.reference:
+                        messagebox.showerror("Error", f"Invalid Pickng Label Barcode: {input}")
+                        self.text_entry.delete(0, tk.END)
+                        self.init_vars()
+                        self.create_widgets()
+                        return
+                    self.current_batch.scanned_q += 1
+                    self.current_batch.remain_q = self.current_batch.total_q - self.current_batch.scanned_q
+                    self.active_picked = self.current_batch.scanned_q
+                    self.active_remain = self.current_batch.remain_q
+                    self.current_batch.usercard = self.user_infos["usercard"]
+                    print(f"Harness From Galia Nr : {self.current_batch.batch_id} is Picked")
+                    insert_harness_track(self.current_batch.reference,
+                                         self.cpt,
+                                         line_id,
+                                         'Picking',
+                                         'OK',
+                                         self.current_batch.batch_id,
+                                         self.current_batch.usercard)
+                    insert_harness_details(self.current_batch.reference,
+                                           self.cpt,
+                                           line_id,
+                                           'Picking',
+                                           'OK',
+                                           self.current_batch.batch_id,
+                                           self.current_batch.usercard)
+                    if self.current_batch.remain_q == 0:
+                        self.current_batch.status = "closed"
+                        self.current_batch.update()
+                        self.text_entry.delete(0, tk.END)
+                        self.init_vars()
+                        self.create_widgets()
+                        return
+                    self.current_batch.update()
+                    self.fusebox_vars()
+                    self.scan_status = 2
                     self.create_widgets()
                     return
         # Configure row weights: 3/4 for top content, 1/4 for table
