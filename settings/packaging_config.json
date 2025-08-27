@@ -2,35 +2,36 @@
     {
         "barcode": "reference",
         "prefix": "P",
-        "photo": "./app_images/XJK/xjk_galia_ref.jpg"
+        "indice": " AA",
+        "photo": "./app_images/CMA2/galia_ref.jpg"
     },
     {
         "barcode": "nrgalia",
         "prefix": "S",
-        "photo": "./app_images/XJK/xjk_galia_nr.jpg"
+        "photo": "./app_images/CMA2/galia_nr.jpg"
     },
     {
         "barcode": "quantity",
         "prefix": "Q",
-        "photo": "./app_images/XJK/xjk_galia_q.jpg"
+        "photo": "./app_images/CMA2/galia_q.jpg"
+    },
+    {
+        "barcode": "box_type",
+        "prefix": "V",
+        "photo": "./app_images/CMA2/carton.jpg"
     }
 ],
-"FX": {"PTA": [
-        {"barcode": "reference",
-        "prefix": "A",
-        "photo": "./app_images/XJK/xjk_pta_ref.jpg"},
-        {"barcode": "compteur",
-        "prefix": "A",
-        "length": 5,
-        "photo": "./app_images/XJK/xjk_pta_cpt.jpg"}
-    ],
-    "BOL": [
+"FX": {"BOL": [
         {"barcode": "reference",
         "prefix": "",
-        "photo": "./app_images/XJK/xjk_bol_ref.jpg"},
+        "photo": "./app_images/CMA2/BOL_roof_ref.jpg"},
         {"barcode": "compteur",
-        "prefix": "E",
+        "prefix": "C",
         "length": 5,
-        "photo": "./app_images/XJK/xjk_bol_cpt.jpg"}
+        "photo": "./app_images/CMA2/BOL_roof_cpt.jpg"},
+        {"barcode": "box_type",
+        "prefix": "B",
+        "length": 5,
+        "photo": "./app_images/CMA2/BOL_roof_carton.jpg"}
     ]}
 }

@@ -18,6 +18,7 @@ from models.engine.packaging_manager import check_cpt_hns
 from models.engine.packaging_manager import list_hns_labels
 from models.engine.printer import tsc_label
 from models.engine.printer import godex_label
+from models.engine.printer import micra_label
 from PIL import Image, ImageTk
 
 class PackagingBody(tk.Frame):
@@ -87,13 +88,14 @@ class PackagingBody(tk.Frame):
                 self.text_entry.delete(0, tk.END)
                 return
             if self.scan_step == "BOX":
+                print("scan_step: BOX")
                 if self.barcode_specs["barcode"] == "reference":
                     print(self.barcode_prefix)
                     if not input.startswith(self.barcode_prefix):
                         messagebox.showerror("Error", f"Invalid barcode prefix. Expected: {self.barcode_prefix}")
                         self.text_entry.delete(0, tk.END)
                         return
-                    self.box_ref = input[len(self.barcode_prefix):]
+                    self.box_ref = input[len(self.barcode_prefix):] + self.indice_ref
                     print(f"Box Reference Scanned: {self.box_ref}")
                     ref_obj = get_obj("reference", "ref", self.box_ref)
                     if not ref_obj:
@@ -200,6 +202,7 @@ class PackagingBody(tk.Frame):
                     self.next_step()
                     return
             elif self.scan_step == "FX":
+                print("scan_step: FX")
                 if self.barcode_specs["barcode"] == "reference":
                     if not input.startswith(self.barcode_prefix):
                         messagebox.showerror("Error", f"Invalid barcode prefix. Expected: {self.barcode_prefix}")
@@ -235,6 +238,10 @@ class PackagingBody(tk.Frame):
                             return
                         self.fx_cpt = self.scanned_cpt
                         print(f"FX Compteur {self.fx_cpt} Scanned")
+                        print(f"box type scan status: {self.box_type_scanned}")
+                        if self.box_type_scanned is True:
+                            print("box type scanned on bol label")
+                            self.step_num = self.fx_barcode_count  # Skip to end of FX barcodes
                         self.text_entry.delete(0, tk.END)
                         self.next_step()
                         return
@@ -246,6 +253,10 @@ class PackagingBody(tk.Frame):
                         self.text_entry.delete(0, tk.END)
                         return
                     self.text_entry.delete(0, tk.END)
+                    print(f"box type scan status: {self.box_type_scanned}")
+                    if self.box_type_scanned is True:
+                        print("box type scanned on bol label")
+                        self.step_num = self.fx_barcode_count  # Skip to end of FX barcodes
                     self.next_step()
                     return
                 elif self.barcode_specs["barcode"] == "box_type":
@@ -266,6 +277,9 @@ class PackagingBody(tk.Frame):
                         self.text_entry.delete(0, tk.END)
                         return
                     print(f"Box Type Scanned: {self.fx_box_type}")
+                    print(f"box type scan status: {self.box_type_scanned}")
+                    self.box_type_scanned = True
+                    print(self.box_type_scanned)
                     self.text_entry.delete(0, tk.END)
                     self.next_step()
                     return
@@ -276,7 +290,7 @@ class PackagingBody(tk.Frame):
                         messagebox.showerror("Error", f"Invalid barcode prefix. Expected: {self.barcode_prefix}")
                         self.text_entry.delete(0, tk.END)
                         return
-                    ref_validation = input[len(self.barcode_prefix):]
+                    ref_validation = input[len(self.barcode_prefix):] + self.indice_ref
                     print(f"Box Reference Scanned: {self.box_ref}")
                     if ref_validation != self.current_galia.reference:
                         messagebox.showerror("Error", f"Validation Reference {ref_validation} does not match opened Galia reference {self.current_galia.reference}.")
@@ -549,6 +563,7 @@ class PackagingBody(tk.Frame):
         self.scanned_cpt = None
         self.fx_cpt = None
         self.fx_box_type = None
+        self.box_type_scanned = False
         # Initialize Box Step variables
         self.new_box = False
         self.box_type_barcode = ""
@@ -565,6 +580,7 @@ class PackagingBody(tk.Frame):
         self.barcode_specs = self.scan_config[self.step_num]
         self.scan_msg = self.barcode_specs.get("barcode", "Unknown") + f" {self.scan_step}"
         self.barcode_prefix = self.barcode_specs["prefix"]
+        self.indice_ref = self.barcode_specs.get("indice", "")
         self.barcode_img = self.barcode_specs.get("photo", self.not_found)
         # Current Box Variables
         self.box_ref = ""

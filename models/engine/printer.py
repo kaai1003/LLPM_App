@@ -47,7 +47,55 @@ def godex_label(label,data):
     except Exception as e:
         print(f"Error: {e}")
 
+def micra_label(label, data):
+    """Generate and print label for Micra printer (EPL format)"""
+    printer = 'Micra Printer'   # ⚠️ change this to the exact Windows printer name
+    template_path = f"./settings/{label}.txt"
 
+    try:
+        # Read the template
+        with open(template_path, 'r') as template_file:
+            label_content = template_file.read()
+
+        # Replace variables in the template
+        if data:
+            label_content = label_content.format(**data)
+            output_label = f'./settings/{label}_output.txt'
+
+            # Save the modified label to a new file
+            with open(output_label, 'w') as output_file:
+                output_file.write(label_content)
+
+            print(f"Label generated and saved to {output_label}")
+
+            try:
+                # Open printer handle
+                printer_handle = win32print.OpenPrinter(printer)
+
+                # Start a print job
+                job = win32print.StartDocPrinter(printer_handle, 1, ("Micra Print Job", None, "RAW"))
+                win32print.StartPagePrinter(printer_handle)
+
+                # EPL must be ASCII, not UTF-8
+                win32print.WritePrinter(printer_handle, label_content.encode("ascii"))
+
+                # End printing
+                win32print.EndPagePrinter(printer_handle)
+                win32print.EndDocPrinter(printer_handle)
+                win32print.ClosePrinter(printer_handle)
+
+                print("File sent to the Micra printer successfully.")
+
+                # ✅ Delete the file after success
+                if os.path.exists(output_label):
+                    os.remove(output_label)
+                    print(f"Deleted temporary file: {output_label}")
+
+            except Exception as e:
+                print(f"Printing Error: {e}")
+
+    except Exception as e:
+        print(f"File/Template Error: {e}")
 
 def tsc_label(nr_galia, ref, qt, op, date_time):
     PRINTER_NAME = "TSC TTP-246 PRO"
