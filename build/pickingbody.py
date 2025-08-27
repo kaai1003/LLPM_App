@@ -294,7 +294,7 @@ class PickingBody(tk.Frame):
                                 "op": self.user_infos["usercard"],
                                 "line_id": line_id,
                                 "date_time": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                                "cpt": self.current_batch.batch_id})
+                                "cpt": self.cpt})
                     self.text_entry.delete(0, tk.END)
                     self.create_widgets()
                     return
